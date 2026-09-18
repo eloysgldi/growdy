@@ -911,6 +911,27 @@ textarea.entrada{resize:none;min-height:96px;line-height:1.45}
   </div>
 </section>
 
+<!-- folha da senha de quem organiza -->
+<section class="folha" id="folha-senha" aria-hidden="true">
+  <div class="folha__alca" data-alca><span></span></div>
+  <div class="folha__topo">
+    <span class="folha__titulo">Área de quem organiza</span>
+    <button class="folha__fechar" data-fechar aria-label="Fechar"><svg width="16" height="16"><use href="#i-x"/></svg></button>
+  </div>
+  <div class="folha__rolagem">
+    <p class="legenda" id="senha-motivo" style="margin-top:0">Digite a senha de administrador para criar e editar campanhas.</p>
+    <label class="campo" for="senha-valor">
+      <span class="campo__nome">Senha</span>
+      <input class="entrada" id="senha-valor" type="password" autocomplete="current-password" placeholder="sua senha">
+    </label>
+    <p class="rodape-nota" style="padding:14px 0 0;text-align:left">Ela fica guardada neste aparelho. Quem apoia pelo link nunca vê esta tela.</p>
+    <div style="height:10px"></div>
+  </div>
+  <div class="folha__pe">
+    <button class="btn btn--principal" id="btn-senha-entrar" style="width:100%">Entrar</button>
+  </div>
+</section>
+
 <!-- folha do pagamento pix -->
 <section class="folha" id="folha-pix" aria-hidden="true">
   <div class="folha__alca" data-alca><span></span></div>
@@ -1198,16 +1219,29 @@ function senhaGuardada() {
 function guardarSenha(s) {
   try { s ? localStorage.setItem("growdy-admin", s) : localStorage.removeItem("growdy-admin"); } catch (e) { /* sem espaço: pede de novo depois */ }
 }
+// tela de senha própria: o prompt do navegador trava a página e nem existe
+// dentro do webview do WhatsApp, que é por onde o link costuma ser aberto
+let resolverSenha = null;
 function pedirSenha(motivo) {
-  const s = window.prompt(motivo || "Senha de administrador para criar campanha:");
-  if (s) guardarSenha(s.trim());
-  return s ? s.trim() : "";
+  return new Promise(resolve => {
+    resolverSenha = resolve;
+    $("#senha-motivo").textContent = motivo || "Digite a senha de administrador para criar e editar campanhas.";
+    $("#senha-valor").value = "";
+    abrirFolha($("#folha-senha"));
+    setTimeout(() => { try { $("#senha-valor").focus(); } catch (e) { } }, 420);
+  });
+}
+function responderSenha(valor) {
+  if (!resolverSenha) return;
+  const devolve = resolverSenha;
+  resolverSenha = null;
+  devolve(valor || "");
 }
 
 // chama o servidor já com a senha; se for recusada, pede de novo e tenta uma vez
 async function comoDono(caminho, opcoes, jaTentou) {
   let senha = senhaGuardada();
-  if (!senha) senha = pedirSenha();
+  if (!senha) senha = await pedirSenha();
   if (!senha) throw new Error("Sem a senha eu não consigo publicar.");
   const r = await fetch(caminho, {
     ...opcoes,
@@ -1217,7 +1251,7 @@ async function comoDono(caminho, opcoes, jaTentou) {
   try { corpo = await r.json(); } catch (e) { corpo = null; }
   if (r.status === 401 && !jaTentou) {
     guardarSenha("");
-    if (!pedirSenha("Senha incorreta. Tente de novo:")) throw new Error("Senha não confere.");
+    if (!(await pedirSenha("Senha incorreta. Tente de novo."))) throw new Error("Senha não confere.");
     return comoDono(caminho, opcoes, true);
   }
   if (!r.ok) throw new Error((corpo && corpo.erro) || "O servidor não respondeu direito.");
@@ -1581,7 +1615,21 @@ function fecharFolha() {
   folhaAberta = null;
   cortina.classList.remove("aberta");
   pararEspera();
+  responderSenha(""); // fechar a folha da senha conta como desistir
 }
+
+function confirmarSenha() {
+  const valor = $("#senha-valor").value.trim();
+  if (!valor) { $("#senha-valor").classList.add("entrada--erro"); return; }
+  $("#senha-valor").classList.remove("entrada--erro");
+  guardarSenha(valor);
+  const devolve = resolverSenha;
+  resolverSenha = null;
+  fecharFolha();
+  if (devolve) devolve(valor);
+}
+$("#btn-senha-entrar").addEventListener("click", confirmarSenha);
+$("#senha-valor").addEventListener("keydown", e => { if (e.key === "Enter") confirmarSenha(); });
 cortina.addEventListener("click", fecharFolha);
 $$("[data-fechar]").forEach(b => b.addEventListener("click", fecharFolha));
 document.addEventListener("keydown", e => { if (e.key === "Escape") fecharFolha(); });
@@ -2124,9 +2172,26 @@ async function conferirQuemSou() {
   } catch (e) { souDono = false; }
 }
 
+// a porta de quem organiza: /?admin=1 pede a senha e guarda neste navegador
+async function entrarComoDono() {
+  if (!senhaGuardada()) await pedirSenha();
+  await conferirQuemSou();
+  if (!souDono && senhaGuardada()) {
+    guardarSenha("");
+    if (await pedirSenha("Senha incorreta. Tente de novo.")) await conferirQuemSou();
+  }
+  // tira o ?admin da barra para o endereço que você compartilha ficar limpo
+  const limpo = new URLSearchParams(location.search);
+  limpo.delete("admin");
+  history.replaceState(null, "", location.pathname + (limpo.toString() ? "?" + limpo : ""));
+  if (souDono) aviso("Bem-vindo de volta");
+}
+
 async function comecar() {
   carregar();
-  await conferirQuemSou();
+  const parametros = new URLSearchParams(location.search);
+  if (parametros.has("admin")) await entrarComoDono();
+  else await conferirQuemSou();
   const id = new URLSearchParams(location.search).get("c");
   if (id) {
     try {

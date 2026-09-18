@@ -23,6 +23,12 @@ Links da demonstração:
 | Abrir o link da campanha, doar, comprar cota | nada |
 | Criar campanha, subir foto | senha (`ADMIN_SENHA`) |
 
+**Como entrar para criar:** abra o site com `?admin=1` no fim do endereço —
+`https://seu-app.onrender.com/?admin=1`. Ele pede a senha uma vez, guarda neste
+aparelho e some com o `?admin=1` da barra. Depois disso é só abrir o site normal.
+Quem chega pelo link de uma campanha vê só a campanha: sem botão de voltar, sem
+assistente, e a raiz do site mostra um aviso de que cada campanha tem o seu link.
+
 A senha fica guardada no navegador de quem administra (`localStorage`), e é enviada
 no cabeçalho `x-admin`. Sem ela, `POST /api/campanhas` e `POST /api/fotos` devolvem 401.
 Se `ADMIN_SENHA` ficar vazia, o modo é aberto — serve para uso local, nunca na internet.
