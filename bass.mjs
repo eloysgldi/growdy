@@ -26,10 +26,28 @@ function carregarEnv() {
 }
 export const env = carregarEnv();
 
+// falta de configuração tem que dizer o que falta, não estourar lá na frente
+const OBRIGATORIAS = ['BASS_PIX_BASE', 'BASS_CLIENT_ID', 'BASS_CLIENT_SECRET', 'BASS_CHAVE_PIX', 'BASS_CERT_CASHIN', 'BASS_KEY_CASHIN'];
+export function conferirConfig() {
+  const faltando = OBRIGATORIAS.filter(k => !env[k]);
+  if (faltando.length) {
+    throw Object.assign(new Error('Faltam variáveis de ambiente: ' + faltando.join(', ')), { status: 500 });
+  }
+}
+
+function lerArquivo(chave) {
+  const alvo = caminho(env[chave]);
+  try {
+    return readFileSync(alvo);
+  } catch (e) {
+    throw Object.assign(new Error('Não achei o certificado de ' + chave + ' em ' + alvo + ' (no Render, confira os Secret Files)'), { status: 500 });
+  }
+}
+
 function agente(certEnv, keyEnv) {
   return new Agent({
-    cert: readFileSync(caminho(env[certEnv])),
-    key: readFileSync(caminho(env[keyEnv])),
+    cert: lerArquivo(certEnv),
+    key: lerArquivo(keyEnv),
     keepAlive: true,
   });
 }
@@ -72,6 +90,7 @@ let fichaCashIn = { token: null, vence: 0 };
 
 export async function tokenCashIn() {
   if (fichaCashIn.token && Date.now() < fichaCashIn.vence) return fichaCashIn.token;
+  conferirConfig();
   const corpo = new URLSearchParams({
     client_id: env.BASS_CLIENT_ID,
     client_secret: env.BASS_CLIENT_SECRET,
