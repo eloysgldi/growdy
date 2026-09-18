@@ -1,0 +1,17 @@
+{
+  "name": "growdy",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Growdy Vaquinha e Growdy Rifas — página de campanha com Pix pela BassPago",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node app.mjs",
+    "dev": "node app.mjs",
+    "semear": "node semear.mjs",
+    "semear:refazer": "node semear.mjs --refazer",
+    "teste:pix": "node teste-pix.mjs"
+  }
+}

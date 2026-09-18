@@ -1,0 +1,41 @@
+services:
+  - type: web
+    name: growdy
+    runtime: node
+    plan: starter            # o disco persistente exige plano pago; no free as fotos somem a cada deploy
+    buildCommand: npm install
+    startCommand: node app.mjs
+    healthCheckPath: /api/saude
+    disk:
+      name: growdy-dados     # guarda dados.json e as fotos enviadas
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: DADOS_DIR
+        value: /var/data
+      - key: DEMO
+        value: "1"           # protótipo de demonstração; ponha 0 quando for pra valer
+      - key: PIX_EXPIRACAO
+        value: "1800"
+      - key: BASS_PIX_BASE
+        value: https://api.pix.basspago.com.br
+      - key: BASS_CONTAS_BASE
+        value: https://pagamentos.basspago.com.br
+      # os caminhos apontam para os Secret Files criados no painel do Render
+      - key: BASS_CERT_CASHIN
+        value: /etc/secrets/cashin.crt
+      - key: BASS_KEY_CASHIN
+        value: /etc/secrets/cashin.key
+      - key: BASS_CERT_CASHOUT
+        value: /etc/secrets/cashout.crt
+      - key: BASS_KEY_CASHOUT
+        value: /etc/secrets/cashout.key
+      # estes ficam em branco aqui e são preenchidos no painel (Environment)
+      - key: ADMIN_SENHA
+        sync: false
+      - key: BASS_CLIENT_ID
+        sync: false
+      - key: BASS_CLIENT_SECRET
+        sync: false
+      - key: BASS_CHAVE_PIX
+        sync: false

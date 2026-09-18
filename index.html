@@ -1,0 +1,2110 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0;font-size:14px;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+img{max-width:100%}
+[hidden]{display:none!important}
+</style>
+<title>Growdy Vaquinha e Rifas</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --verde:#00A15C;
+  --verde-fundo:#009153;
+  --verde-esc:#06623B;
+  --verde-vivo:#34D98A;
+  --tinta:#0E1C16;
+  --musgo:#5E7268;
+  --musgo-claro:#8CA096;
+  --nevoa:#F1FAF4;
+  --nevoa-forte:#E4F4EB;
+  --linha:#E2EDE7;
+  --branco:#FFFFFF;
+  --ambar:#E2891B;
+  --ambar-esc:#7A4C0B;
+  --ambar-nevoa:#FFF4E4;
+  --ambar-linha:#F6E0BE;
+  --fora:#E8F1EC;
+  --fora-tinta:#4B6659;
+  --sombra-baixa:0 1px 2px rgba(6,60,38,.06), 0 6px 18px -8px rgba(6,60,38,.18);
+  --sombra-alta:0 -10px 40px -12px rgba(6,60,38,.28);
+  --mola:cubic-bezier(.22,1.2,.36,1);
+  --suave:cubic-bezier(.32,.72,0,1);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){ --fora:#0C1512; --fora-tinta:#7C9488; }
+}
+:root[data-theme="dark"]{ --fora:#0C1512; --fora-tinta:#7C9488; }
+
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{
+  background:var(--fora);
+  background-image:radial-gradient(120% 60% at 50% 0%, rgba(0,161,92,.10), transparent 60%);
+  color:var(--tinta);
+  font-family:"Figtree",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  font-size:15px;line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  display:flex;justify-content:center;
+  overflow-x:hidden;
+}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+input,textarea,select{font:inherit;color:inherit}
+:focus-visible{outline:2.5px solid var(--verde);outline-offset:2px;border-radius:8px}
+
+/* ---------- moldura ---------- */
+.fone{
+  width:min(100%,430px);
+  background:var(--branco);
+  min-height:100dvh;
+  position:relative;
+  overflow:hidden;
+  display:flex;flex-direction:column;
+}
+@media (min-width:520px){
+  body{padding-block:28px}
+  .fone{
+    min-height:min(880px,calc(100dvh - 56px));
+    border-radius:34px;
+    box-shadow:0 30px 80px -30px rgba(6,60,38,.45), 0 0 0 1px rgba(6,60,38,.08);
+  }
+  .rodape-desktop{position:fixed;bottom:14px;left:0;right:0;text-align:center;font-size:12px;color:var(--fora-tinta);letter-spacing:.04em}
+}
+@media (max-width:519px){ .rodape-desktop{display:none} }
+
+/* ---------- telas ---------- */
+.tela{display:none;flex:1;flex-direction:column;min-height:0}
+.tela.ativa{display:flex;animation:entrar .42s var(--mola) both}
+.tela.voltando{animation:entrar-tras .42s var(--mola) both}
+@keyframes entrar{from{opacity:0;transform:translateX(26px)}to{opacity:1;transform:none}}
+@keyframes entrar-tras{from{opacity:0;transform:translateX(-26px)}to{opacity:1;transform:none}}
+.rolagem{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.rolagem::-webkit-scrollbar{display:none}
+.miolo{padding:20px 20px 0}
+
+/* ---------- topo ---------- */
+.topo{
+  position:sticky;top:env(safe-area-inset-top,0px);z-index:20;
+  background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(14px);
+  border-bottom:1px solid var(--linha);
+}
+.topo__linha{display:flex;align-items:center;gap:12px;padding:12px 16px}
+.topo__titulo{font-family:"Bricolage Grotesque",Georgia,serif;font-weight:700;font-size:16px;letter-spacing:-.01em}
+.topo__passo{margin-left:auto;font-size:12px;color:var(--musgo);font-variant-numeric:tabular-nums}
+.voltar{width:36px;height:36px;border-radius:12px;display:grid;place-items:center;background:var(--nevoa);color:var(--verde-esc);transition:transform .2s var(--mola),background .2s}
+.voltar:active{transform:scale(.9);background:var(--nevoa-forte)}
+.trilho{height:3px;background:var(--nevoa-forte);position:relative;overflow:hidden}
+.trilho__fita{position:absolute;inset:0 auto 0 0;background:linear-gradient(90deg,var(--verde),var(--verde-vivo));border-radius:0 3px 3px 0;transition:width .55s var(--mola)}
+
+/* ---------- tipografia ---------- */
+h1,h2,h3{font-family:"Bricolage Grotesque",Georgia,serif;margin:0;text-wrap:balance;letter-spacing:-.02em;color:var(--verde-esc)}
+h1{font-size:27px;line-height:1.14;font-weight:800}
+h2{font-size:20px;line-height:1.2;font-weight:700}
+h3{font-size:15px;font-weight:700;letter-spacing:-.01em}
+.olho{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--verde);margin-bottom:8px}
+.legenda{color:var(--musgo);font-size:14px;margin:8px 0 0;max-width:34em}
+.num{font-family:"DM Mono","SFMono-Regular",Consolas,monospace;font-variant-numeric:tabular-nums}
+
+/* ---------- escolha do tipo ---------- */
+.abertura{padding:34px 20px 0}
+.marca{display:flex;align-items:center;gap:9px;font-family:"Bricolage Grotesque",Georgia,serif;font-weight:800;font-size:15px;color:var(--verde-esc);letter-spacing:-.01em}
+.marca__selo{width:26px;height:26px;border-radius:9px;background:linear-gradient(145deg,var(--verde-vivo),var(--verde));display:grid;place-items:center;box-shadow:0 4px 12px -4px rgba(0,161,92,.6)}
+.cartoes{display:flex;flex-direction:column;gap:14px;padding:24px 20px 0}
+.cartao{
+  position:relative;display:flex;gap:14px;align-items:center;text-align:left;width:100%;
+  padding:18px;border-radius:22px;background:var(--branco);
+  border:1.5px solid var(--linha);box-shadow:var(--sombra-baixa);
+  transition:transform .28s var(--mola),border-color .28s,box-shadow .28s;
+  animation:subir .5s var(--mola) both;
+}
+.cartao:nth-child(2){animation-delay:.07s}
+.cartao:active{transform:scale(.975)}
+.cartao:hover{border-color:var(--verde-vivo)}
+.cartao--rifa:hover{border-color:var(--ambar)}
+.cartao__arte{width:64px;height:64px;flex:none;border-radius:18px;display:grid;place-items:center;background:var(--nevoa)}
+.cartao--rifa .cartao__arte{background:var(--ambar-nevoa)}
+.cartao__nome{font-family:"Bricolage Grotesque",Georgia,serif;font-weight:700;font-size:17px;color:var(--verde-esc)}
+.cartao--rifa .cartao__nome{color:var(--ambar-esc)}
+.cartao__texto{font-size:13px;color:var(--musgo);margin-top:3px;line-height:1.4}
+.cartao__seta{margin-left:auto;color:var(--musgo-claro);flex:none}
+@keyframes subir{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+.como-funciona{margin:26px 20px 0;padding:16px 18px;border-radius:18px;background:var(--nevoa);animation:subir .5s .16s var(--mola) both}
+.passos-lista{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-direction:column;gap:9px}
+.passos-lista li{display:flex;gap:10px;font-size:13.5px;color:var(--verde-esc);align-items:flex-start}
+.passos-lista b{font-weight:600}
+.bolinha{width:19px;height:19px;flex:none;border-radius:50%;background:var(--branco);color:var(--verde);display:grid;place-items:center;font-size:11px;font-weight:700;margin-top:1px;box-shadow:0 1px 3px rgba(6,60,38,.12)}
+
+/* ---------- formulario ---------- */
+.campo{display:block;margin-top:18px}
+.campo__nome{display:flex;align-items:baseline;gap:8px;font-size:13px;font-weight:600;color:var(--verde-esc);margin-bottom:7px}
+.campo__dica{font-size:12px;font-weight:400;color:var(--musgo-claro);margin-left:auto}
+.entrada{
+  width:100%;padding:13px 14px;border-radius:14px;background:var(--branco);
+  border:1.5px solid var(--linha);font-size:15.5px;transition:border-color .2s,box-shadow .2s,background .2s;
+}
+.entrada::placeholder{color:var(--musgo-claro)}
+.entrada:focus{outline:none;border-color:var(--verde);box-shadow:0 0 0 4px rgba(0,161,92,.12)}
+textarea.entrada{resize:none;min-height:96px;line-height:1.45}
+.entrada--erro{border-color:#D6453D;background:#FFF6F5;animation:tremer .4s}
+@keyframes tremer{10%,90%{transform:translateX(-2px)}30%,70%{transform:translateX(4px)}50%{transform:translateX(-4px)}}
+.erro{display:none;font-size:12.5px;color:#C13B33;margin-top:6px}
+.erro.visivel{display:block;animation:subir .3s var(--mola) both}
+.dupla{display:flex;gap:12px}
+.dupla>*{flex:1;min-width:0}
+.prefixo{position:relative}
+.prefixo__sinal{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--musgo);font-size:15px;pointer-events:none}
+.prefixo .entrada{padding-left:42px;font-family:"DM Mono",Consolas,monospace;font-variant-numeric:tabular-nums}
+
+/* ---------- chips de valores ---------- */
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.chip{
+  padding:9px 15px;border-radius:999px;background:var(--nevoa);color:var(--verde-esc);
+  font-weight:600;font-size:14px;border:1.5px solid transparent;
+  transition:transform .22s var(--mola),background .2s,border-color .2s,color .2s;
+}
+.chip:active{transform:scale(.93)}
+.chip.ativo{background:var(--verde);color:#fff;border-color:var(--verde);box-shadow:0 6px 16px -8px rgba(0,161,92,.9);animation:pipoca .34s var(--mola)}
+@keyframes pipoca{40%{transform:scale(1.09)}100%{transform:scale(1)}}
+.mini-valores{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:8px}
+.mini-valores .prefixo .entrada{padding:10px 8px 10px 26px;text-align:left;font-size:14px}
+.mini-valores .prefixo__sinal{left:9px;font-size:13px}
+
+/* ---------- interruptor ---------- */
+.interruptor{display:flex;align-items:center;gap:12px;margin-top:18px;padding:13px 14px;border-radius:16px;background:var(--nevoa);cursor:pointer;width:100%;text-align:left}
+.interruptor__texto{font-size:13.5px;color:var(--verde-esc);font-weight:600}
+.interruptor__sub{font-size:12px;color:var(--musgo);font-weight:400;margin-top:2px}
+.chave{width:46px;height:28px;flex:none;border-radius:999px;background:#CFDED6;position:relative;transition:background .3s var(--suave)}
+.chave::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 2px 5px rgba(6,60,38,.25);transition:transform .32s var(--mola)}
+.interruptor.ligado .chave{background:var(--verde)}
+.interruptor.ligado .chave::after{transform:translateX(18px)}
+
+/* ---------- fotos ---------- */
+.grade-fotos{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px}
+.foto{position:relative;aspect-ratio:1;max-width:100%;border-radius:14px;overflow:hidden;background:var(--nevoa);animation:pipoca-foto .4s var(--mola) both}
+@keyframes pipoca-foto{from{opacity:0;transform:scale(.7)}to{opacity:1;transform:none}}
+.foto img{width:100%;height:100%;object-fit:cover;display:block}
+.foto__x{position:absolute;top:5px;right:5px;width:24px;height:24px;border-radius:50%;background:rgba(14,28,22,.62);color:#fff;display:grid;place-items:center;backdrop-filter:blur(4px);transition:transform .2s var(--mola)}
+.foto__x:active{transform:scale(.85)}
+.foto__capa{position:absolute;left:5px;bottom:5px;font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;background:var(--verde);color:#fff;padding:3px 7px;border-radius:7px}
+.foto__virar{position:absolute;left:5px;bottom:5px;font-size:10px;font-weight:600;background:rgba(255,255,255,.92);color:var(--verde-esc);padding:3px 7px;border-radius:7px}
+.add-foto{
+  aspect-ratio:1;max-width:100%;border-radius:14px;border:1.5px dashed #BBD5C6;background:var(--nevoa);
+  display:grid;place-items:center;color:var(--verde);font-size:11px;font-weight:600;
+  transition:transform .2s var(--mola),background .2s,border-color .2s;
+}
+.add-foto:active{transform:scale(.94)}
+.add-foto:hover{background:var(--nevoa-forte);border-color:var(--verde-vivo)}
+.add-foto__conteudo{display:grid;justify-items:center;gap:3px}
+
+/* ---------- promocoes da rifa ---------- */
+.promo-linha{
+  display:flex;align-items:center;gap:8px;padding:11px 12px;margin-top:8px;
+  border-radius:15px;background:var(--ambar-nevoa);border:1.5px solid var(--ambar-linha);
+  animation:subir .36s var(--mola) both;
+}
+.promo-linha .entrada{padding:8px 6px;border-radius:10px;background:#fff;border-color:transparent;font-size:14px;text-align:center}
+.promo-linha .mini{width:48px;flex:none}
+.promo-linha .medio{width:76px;flex:none;font-family:"DM Mono",Consolas,monospace}
+.promo-txt{font-size:13px;color:var(--ambar-esc);font-weight:600}
+.promo-eco{margin-left:auto;font-size:11px;font-weight:700;color:var(--ambar-esc);background:#fff;padding:4px 7px;border-radius:8px;white-space:nowrap}
+.promo-x{width:26px;height:26px;flex:none;border-radius:9px;display:grid;place-items:center;color:var(--ambar-esc);background:rgba(255,255,255,.7)}
+.add-promo{margin-top:10px;width:100%;padding:12px;border-radius:15px;border:1.5px dashed var(--ambar-linha);color:var(--ambar-esc);font-weight:600;font-size:13.5px;background:#FFFBF4;transition:transform .2s var(--mola)}
+.add-promo:active{transform:scale(.98)}
+
+/* ---------- barra de acao ---------- */
+.barra-acao{
+  position:sticky;bottom:0;z-index:30;margin-top:auto;
+  padding:12px 20px calc(12px + env(safe-area-inset-bottom,0px));
+  background:linear-gradient(to top,var(--branco) 62%,rgba(255,255,255,0));
+  display:flex;gap:10px;align-items:center;
+}
+.btn{
+  flex:1;padding:16px 18px;border-radius:17px;font-weight:700;font-size:15.5px;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  transition:transform .2s var(--mola),box-shadow .25s,filter .2s;
+}
+.btn:active{transform:scale(.97)}
+.btn--principal{background:var(--verde);color:#fff;box-shadow:0 10px 24px -12px rgba(0,161,92,1),0 2px 0 0 var(--verde-fundo) inset}
+.btn--principal:hover{filter:brightness(1.04)}
+.btn--ambar{background:var(--ambar);color:#fff;box-shadow:0 10px 24px -12px rgba(226,137,27,1)}
+.btn--fantasma{flex:none;padding:16px;background:var(--nevoa);color:var(--verde-esc)}
+.btn--bloqueado{opacity:.45;pointer-events:none}
+.btn__brilho{position:relative;overflow:hidden}
+.btn__brilho::after{
+  content:"";position:absolute;top:0;left:-60%;width:40%;height:100%;
+  background:linear-gradient(100deg,transparent,rgba(255,255,255,.42),transparent);
+  animation:varrer 3.4s var(--suave) infinite;
+}
+@keyframes varrer{0%{left:-60%}55%,100%{left:120%}}
+
+/* ---------- pagina publica ---------- */
+.capa{position:relative;background:var(--nevoa)}
+.carrossel{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;aspect-ratio:5/4}
+.carrossel::-webkit-scrollbar{display:none}
+.carrossel__slide{flex:0 0 100%;scroll-snap-align:center;position:relative}
+.carrossel__slide img{width:100%;height:100%;object-fit:cover;display:block}
+.capa__vazia{display:grid;place-items:center;height:100%;color:var(--musgo);font-size:13px;gap:8px;text-align:center;padding:20px}
+.capa__sombra{position:absolute;inset:auto 0 0 0;height:120px;background:linear-gradient(to top,rgba(6,40,26,.72),transparent);pointer-events:none}
+.pontos{position:absolute;left:0;right:0;bottom:12px;display:flex;justify-content:center;gap:5px}
+.ponto{width:6px;height:6px;border-radius:99px;background:rgba(255,255,255,.55);transition:width .3s var(--mola),background .3s}
+.ponto.ativo{width:18px;background:#fff}
+.selo-exemplo{position:absolute;top:calc(12px + env(safe-area-inset-top,0px));right:12px;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;background:rgba(14,28,22,.55);color:#fff;padding:5px 9px;border-radius:9px;backdrop-filter:blur(6px)}
+.voltar-flutuante{position:absolute;top:calc(12px + env(safe-area-inset-top,0px));left:12px;width:38px;height:38px;border-radius:13px;display:grid;place-items:center;background:rgba(255,255,255,.9);color:var(--verde-esc);backdrop-filter:blur(8px);box-shadow:0 4px 14px -6px rgba(6,60,38,.5);transition:transform .2s var(--mola)}
+.voltar-flutuante:active{transform:scale(.9)}
+
+.etiqueta{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:6px 11px;border-radius:999px;background:var(--nevoa-forte);color:var(--verde-esc)}
+.etiqueta--rifa{background:var(--ambar-nevoa);color:var(--ambar-esc)}
+.publica__corpo{padding:18px 20px 0}
+.organizador{display:flex;align-items:center;gap:10px;margin-top:14px;padding-top:14px;border-top:1px solid var(--linha)}
+.avatar{width:34px;height:34px;border-radius:50%;flex:none;display:grid;place-items:center;font-weight:700;font-size:13px;color:#fff;background:linear-gradient(145deg,var(--verde-vivo),var(--verde))}
+.organizador__nome{font-size:13.5px;font-weight:600;color:var(--verde-esc)}
+.organizador__sub{font-size:12px;color:var(--musgo)}
+.verificado{margin-left:auto;font-size:11px;font-weight:700;color:var(--verde);background:var(--nevoa);padding:5px 9px;border-radius:9px}
+
+.painel{margin-top:16px;padding:18px;border-radius:22px;background:var(--nevoa);border:1px solid var(--nevoa-forte)}
+.painel--rifa{background:var(--ambar-nevoa);border-color:var(--ambar-linha)}
+.valor-principal{font-family:"Bricolage Grotesque",Georgia,serif;font-size:30px;font-weight:800;color:var(--verde-esc);letter-spacing:-.03em;font-variant-numeric:tabular-nums;line-height:1}
+.painel--rifa .valor-principal{color:var(--ambar-esc)}
+.valor-apoio{font-size:13px;color:var(--musgo);margin-top:5px}
+.progresso{height:10px;border-radius:99px;background:#fff;margin-top:13px;overflow:hidden;position:relative;box-shadow:inset 0 1px 2px rgba(6,60,38,.08)}
+.progresso__fita{height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,var(--verde),var(--verde-vivo));transition:width 1s var(--mola);position:relative;overflow:hidden}
+.painel--rifa .progresso__fita{background:linear-gradient(90deg,var(--ambar),#F7C46C)}
+.progresso__fita::after{content:"";position:absolute;inset:0;background:linear-gradient(100deg,transparent,rgba(255,255,255,.55),transparent);transform:translateX(-100%);animation:correr 2.2s var(--suave) infinite}
+@keyframes correr{to{transform:translateX(200%)}}
+.progresso-legenda{display:flex;justify-content:space-between;margin-top:9px;font-size:12px;color:var(--musgo);font-variant-numeric:tabular-nums}
+.progresso-legenda b{color:var(--verde-esc);font-weight:700}
+.painel--rifa .progresso-legenda b{color:var(--ambar-esc)}
+
+.tres{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
+.tijolo{padding:12px 10px;border-radius:15px;background:#fff;text-align:center}
+.tijolo__num{font-family:"DM Mono",Consolas,monospace;font-size:15px;font-weight:500;color:var(--verde-esc);font-variant-numeric:tabular-nums;white-space:nowrap;letter-spacing:-.02em}
+.painel--rifa .tijolo__num{color:var(--ambar-esc)}
+.tijolo__rot{font-size:10.5px;color:var(--musgo);margin-top:2px;letter-spacing:.03em}
+
+.secao{margin-top:26px}
+.secao__titulo{display:flex;align-items:center;gap:8px;font-family:"Bricolage Grotesque",Georgia,serif;font-size:15.5px;font-weight:700;color:var(--verde-esc);margin-bottom:10px}
+.texto-longo{font-size:14.5px;color:#2C3F36;line-height:1.62;white-space:pre-wrap}
+.apoiador{display:flex;align-items:center;gap:11px;padding:11px 0;border-bottom:1px solid var(--linha)}
+.apoiador:last-child{border-bottom:0}
+.apoiador__nome{font-size:14px;font-weight:600;color:var(--verde-esc)}
+.apoiador__msg{font-size:12.5px;color:var(--musgo);margin-top:1px}
+.apoiador__valor{margin-left:auto;font-family:"DM Mono",Consolas,monospace;font-size:14px;color:var(--verde);font-weight:500;white-space:nowrap}
+.apoiador--novo{animation:subir .5s var(--mola) both;background:linear-gradient(90deg,var(--nevoa),transparent);border-radius:12px;padding-left:8px;padding-right:8px}
+.pacotes-vitrine{display:flex;gap:10px;overflow-x:auto;padding:2px 20px 4px;margin:0 -20px;scrollbar-width:none}
+.pacotes-vitrine::-webkit-scrollbar{display:none}
+.vitrine-item{flex:0 0 auto;padding:12px 14px;border-radius:16px;background:var(--ambar-nevoa);border:1.5px solid var(--ambar-linha);min-width:120px}
+.vitrine-item__qtd{font-family:"DM Mono",Consolas,monospace;font-size:15px;color:var(--ambar-esc);font-weight:500}
+.vitrine-item__preco{font-size:13px;font-weight:700;color:var(--ambar-esc);margin-top:2px}
+.vitrine-item__eco{font-size:11px;color:#9A6A20;margin-top:2px}
+
+/* ---------- folha (bottom sheet) ---------- */
+.cortina{position:fixed;inset:0;background:rgba(9,32,22,.5);backdrop-filter:blur(2px);opacity:0;pointer-events:none;transition:opacity .35s var(--suave);z-index:40}
+.cortina.aberta{opacity:1;pointer-events:auto}
+.folha{
+  position:fixed;bottom:0;left:50%;transform:translate(-50%,102%);
+  width:min(100%,430px);max-height:92dvh;z-index:50;
+  background:var(--branco);border-radius:26px 26px 0 0;
+  box-shadow:var(--sombra-alta);
+  display:flex;flex-direction:column;
+  transition:transform .44s var(--mola);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+.folha.aberta{transform:translate(-50%,0)}
+.folha.arrastando{transition:none}
+.folha__alca{padding:10px 0 4px;display:grid;place-items:center;touch-action:none;cursor:grab}
+.folha__alca span{width:38px;height:4px;border-radius:99px;background:#D3E2DA;display:block}
+.folha__topo{display:flex;align-items:center;gap:10px;padding:2px 20px 12px}
+.folha__titulo{font-family:"Bricolage Grotesque",Georgia,serif;font-weight:700;font-size:17px;color:var(--verde-esc)}
+.folha__fechar{margin-left:auto;width:32px;height:32px;border-radius:11px;display:grid;place-items:center;background:var(--nevoa);color:var(--musgo)}
+.folha__rolagem{overflow-y:auto;padding:0 20px;scrollbar-width:none}
+.folha__rolagem::-webkit-scrollbar{display:none}
+.folha__pe{padding:14px 20px calc(16px + env(safe-area-inset-bottom,0px));background:var(--branco);border-top:1px solid var(--linha)}
+
+.mostrador{text-align:center;padding:10px 0 6px}
+.mostrador__rotulo{font-size:12px;color:var(--musgo);letter-spacing:.04em}
+.mostrador__valor{
+  font-family:"Bricolage Grotesque",Georgia,serif;font-weight:800;letter-spacing:-.035em;
+  font-size:44px;color:var(--verde-esc);font-variant-numeric:tabular-nums;line-height:1.1;margin-top:2px;
+}
+.mostrador__valor.pulso{animation:pulso .32s var(--mola)}
+@keyframes pulso{45%{transform:scale(1.07)}100%{transform:scale(1)}}
+.mostrador--rifa .mostrador__valor{color:var(--ambar-esc)}
+.entrada-valor{width:100%;text-align:center;border:0;font-family:"Bricolage Grotesque",Georgia,serif;font-size:44px;font-weight:800;color:var(--verde-esc);background:transparent;letter-spacing:-.035em}
+.entrada-valor:focus{outline:none}
+
+.contador{display:flex;align-items:center;justify-content:center;gap:18px;padding:8px 0 4px}
+.contador__btn{width:50px;height:50px;border-radius:17px;background:var(--ambar-nevoa);color:var(--ambar-esc);display:grid;place-items:center;font-size:24px;font-weight:600;transition:transform .2s var(--mola),background .2s}
+.contador__btn:active{transform:scale(.9);background:#FBE8CC}
+.contador__num{font-family:"DM Mono",Consolas,monospace;font-size:40px;font-weight:500;color:var(--ambar-esc);min-width:88px;text-align:center;font-variant-numeric:tabular-nums}
+.pacote{
+  display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:14px;border-radius:17px;
+  background:#fff;border:1.5px solid var(--linha);margin-top:9px;
+  transition:transform .22s var(--mola),border-color .2s,background .2s;
+}
+.pacote:active{transform:scale(.985)}
+.pacote.ativo{border-color:var(--ambar);background:var(--ambar-nevoa)}
+.pacote__qtd{font-family:"DM Mono",Consolas,monospace;font-size:16px;font-weight:500;color:var(--ambar-esc)}
+.pacote__un{font-size:12px;color:var(--musgo);margin-top:2px}
+.pacote__preco{margin-left:auto;text-align:right}
+.pacote__valor{font-weight:700;font-size:15px;color:var(--ambar-esc)}
+.pacote__eco{font-size:11px;font-weight:700;color:#fff;background:var(--ambar);padding:2px 7px;border-radius:7px;display:inline-block;margin-top:3px}
+.resumo{display:flex;align-items:center;justify-content:space-between;margin-top:16px;padding:14px;border-radius:16px;background:var(--nevoa)}
+.resumo__rot{font-size:13px;color:var(--musgo)}
+.resumo__valor{font-family:"Bricolage Grotesque",Georgia,serif;font-size:22px;font-weight:800;color:var(--verde-esc);font-variant-numeric:tabular-nums}
+.resumo--rifa .resumo__valor{color:var(--ambar-esc)}
+.resumo--rifa{background:var(--ambar-nevoa)}
+
+/* ---------- a festa do obrigado ---------- */
+.festa{position:relative;text-align:center;padding:8px 6px 10px;overflow:hidden}
+.festa::before{
+  content:"";position:absolute;left:50%;top:-40px;width:320px;height:220px;transform:translateX(-50%);
+  background:radial-gradient(closest-side, rgba(52,217,138,.22), transparent 70%);
+  pointer-events:none;animation:respirar 3.4s ease-in-out infinite;
+}
+.festa--rifa::before{background:radial-gradient(closest-side, rgba(247,196,108,.3), transparent 70%)}
+@keyframes respirar{0%,100%{opacity:.75;transform:translateX(-50%) scale(1)}50%{opacity:1;transform:translateX(-50%) scale(1.08)}}
+
+/* serpentinas caindo atrás do selo */
+.serpentina{position:absolute;top:-30px;width:8px;height:22px;border-radius:3px;opacity:0;pointer-events:none;animation:serpentina-cai 2.6s var(--suave) forwards}
+@keyframes serpentina-cai{
+  0%{opacity:0;transform:translateY(-20px) rotate(0)}
+  12%{opacity:.9}
+  100%{opacity:0;transform:translateY(300px) rotate(540deg)}
+}
+
+/* o selo: anéis pulsando, disco com mola, risco desenhado e faíscas saindo */
+.selo-palco{position:relative;width:132px;height:132px;margin:14px auto 0;display:grid;place-items:center}
+.anel{position:absolute;width:88px;height:88px;border-radius:50%;border:2px solid var(--verde-vivo);opacity:0;animation:anel-expande 2.6s var(--suave) infinite}
+.anel:nth-of-type(2){animation-delay:.55s}
+.anel:nth-of-type(3){animation-delay:1.1s}
+.festa--rifa .anel{border-color:var(--ambar)}
+@keyframes anel-expande{0%{transform:scale(.72);opacity:.6}70%{opacity:0}100%{transform:scale(1.5);opacity:0}}
+.selo-disco{
+  position:relative;z-index:2;width:88px;height:88px;border-radius:50%;display:grid;place-items:center;
+  background:linear-gradient(145deg,var(--verde-vivo),var(--verde));color:#fff;
+  box-shadow:0 16px 34px -14px rgba(0,161,92,.95), inset 0 -3px 0 rgba(0,0,0,.08);
+  animation:selo-mola .8s var(--mola) both;
+}
+.festa--rifa .selo-disco{background:linear-gradient(145deg,#F7C46C,var(--ambar));box-shadow:0 16px 34px -14px rgba(226,137,27,.95), inset 0 -3px 0 rgba(0,0,0,.08)}
+@keyframes selo-mola{
+  0%{opacity:0;transform:scale(.25) rotate(-28deg)}
+  55%{opacity:1;transform:scale(1.14) rotate(5deg)}
+  75%{transform:scale(.97) rotate(-2deg)}
+  100%{opacity:1;transform:scale(1) rotate(0)}
+}
+.risco{stroke-dasharray:40;stroke-dashoffset:40;animation:riscar .55s .4s var(--suave) forwards}
+@keyframes riscar{to{stroke-dashoffset:0}}
+.faisca{position:absolute;z-index:1;width:8px;height:8px;border-radius:2px;background:var(--verde-vivo);opacity:0;animation:faiscar 1.05s .32s var(--mola) forwards}
+.festa--rifa .faisca{background:var(--ambar)}
+@keyframes faiscar{
+  0%{opacity:0;transform:translate(0,0) scale(.3) rotate(0)}
+  22%{opacity:1}
+  100%{opacity:0;transform:translate(var(--fx),var(--fy)) scale(1) rotate(180deg)}
+}
+
+.festa__titulo{
+  font-family:"Bricolage Grotesque",Georgia,serif;font-weight:800;font-size:27px;line-height:1.12;
+  letter-spacing:-.03em;color:var(--verde-esc);margin:20px auto 0;max-width:15em;text-wrap:balance;
+}
+.festa--rifa .festa__titulo{color:var(--ambar-esc)}
+.festa__titulo span{display:inline-block;opacity:0;filter:blur(7px);transform:translateY(16px);animation:palavra-sobe .55s var(--mola) forwards}
+@keyframes palavra-sobe{to{opacity:1;filter:blur(0);transform:none}}
+
+.festa__valor{
+  font-family:"Bricolage Grotesque",Georgia,serif;font-weight:800;font-size:40px;letter-spacing:-.04em;
+  color:var(--verde);font-variant-numeric:tabular-nums;margin-top:14px;line-height:1;
+  animation:valor-entra .6s .35s var(--mola) both;
+}
+.festa--rifa .festa__valor{color:var(--ambar)}
+@keyframes valor-entra{from{opacity:0;transform:scale(.7)}to{opacity:1;transform:scale(1)}}
+.festa__rotulo{font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--musgo-claro);font-weight:700;margin-top:8px;animation:subir .5s .5s var(--mola) both}
+.festa__frase{color:var(--musgo);font-size:14.5px;line-height:1.55;margin:14px auto 0;max-width:30em;animation:subir .5s .6s var(--mola) both}
+.festa__frase b{color:var(--verde-esc);font-weight:700}
+.festa--rifa .festa__frase b{color:var(--ambar-esc)}
+
+/* o empurrão que este apoio deu na barra */
+.impacto{margin-top:20px;padding:15px 16px;border-radius:20px;background:var(--nevoa);text-align:left;animation:subir .5s .72s var(--mola) both}
+.festa--rifa .impacto{background:var(--ambar-nevoa)}
+.impacto__topo{display:flex;align-items:baseline;gap:8px;font-size:12px;color:var(--musgo)}
+.impacto__selo{margin-left:auto;font-size:11px;font-weight:700;color:#fff;background:var(--verde);padding:3px 9px;border-radius:8px;opacity:0;animation:selo-pipoca .55s 1.45s var(--mola) forwards}
+@keyframes selo-pipoca{0%{opacity:0;transform:scale(.55) translateY(4px)}60%{opacity:1;transform:scale(1.14)}100%{opacity:1;transform:scale(1)}}
+.festa--rifa .impacto__selo{background:var(--ambar)}
+.impacto__barra{position:relative;height:12px;border-radius:99px;background:#fff;margin-top:11px;overflow:hidden;box-shadow:inset 0 1px 2px rgba(6,60,38,.08)}
+.impacto__antes{position:absolute;top:0;bottom:0;left:0;border-radius:99px;background:#CFE7DA}
+.festa--rifa .impacto__antes{background:#F2DDBB}
+.impacto__agora{position:absolute;top:0;bottom:0;left:0;width:0;border-radius:99px;background:linear-gradient(90deg,var(--verde),var(--verde-vivo));transition:width 1.5s .9s var(--mola)}
+.festa--rifa .impacto__agora{background:linear-gradient(90deg,var(--ambar),#F7C46C)}
+.impacto__pe{display:flex;justify-content:space-between;margin-top:9px;font-size:12px;color:var(--musgo);font-variant-numeric:tabular-nums}
+.impacto__pe b{color:var(--verde-esc)}
+.festa--rifa .impacto__pe b{color:var(--ambar-esc)}
+
+/* os bilhetes da rifa virando na tela */
+.bilhetes{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:18px;perspective:700px}
+.bilhete{
+  position:relative;font-family:"DM Mono",Consolas,monospace;font-size:14.5px;font-weight:500;
+  color:var(--ambar-esc);background:var(--ambar-nevoa);border:1.5px dashed var(--ambar);
+  padding:9px 14px 9px 20px;border-radius:11px;animation:bilhete-gira .62s var(--mola) both;
+}
+.bilhete::before{content:"";position:absolute;left:8px;top:7px;bottom:7px;width:2px;border-left:2px dotted var(--ambar);opacity:.6}
+@keyframes bilhete-gira{
+  0%{opacity:0;transform:rotateY(-85deg) translateY(14px)}
+  65%{opacity:1;transform:rotateY(12deg) translateY(0)}
+  100%{opacity:1;transform:rotateY(0) translateY(0)}
+}
+.bilhetes-titulo{font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ambar-esc);font-weight:700;margin-top:20px;opacity:.85}
+
+/* compartilhar */
+.compartilhar{display:flex;gap:9px;margin-top:18px;animation:subir .5s .85s var(--mola) both}
+.compartilhar button{
+  flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:13px 10px;border-radius:15px;
+  font-weight:700;font-size:13.5px;background:#fff;border:1.5px solid var(--linha);color:var(--verde-esc);
+  transition:transform .2s var(--mola),border-color .2s,background .2s;
+}
+.compartilhar button:active{transform:scale(.96)}
+.compartilhar button:hover{border-color:var(--verde-vivo);background:var(--nevoa)}
+.festa--rifa .compartilhar button{color:var(--ambar-esc)}
+.festa--rifa .compartilhar button:hover{border-color:var(--ambar);background:var(--ambar-nevoa)}
+.link-copiar{display:flex;align-items:center;gap:10px;margin-top:18px;padding:13px 14px;border-radius:15px;background:var(--nevoa);text-align:left}
+.link-copiar__url{font-size:13px;color:var(--verde-esc);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
+.link-copiar__btn{font-size:12.5px;font-weight:700;color:#fff;background:var(--verde);padding:8px 13px;border-radius:11px;flex:none;transition:transform .2s var(--mola)}
+.link-copiar__btn:active{transform:scale(.93)}
+#confete{position:fixed;inset:0;pointer-events:none;z-index:60}
+.aviso{
+  position:fixed;left:50%;transform:translate(-50%,-24px);
+  top:calc(14px + env(safe-area-inset-top,0px));z-index:70;
+  background:var(--verde-esc);color:#fff;padding:11px 17px;border-radius:14px;font-size:13.5px;font-weight:600;
+  opacity:0;transition:opacity .3s,transform .4s var(--mola);box-shadow:0 12px 30px -12px rgba(6,60,38,.8);
+  max-width:calc(100% - 32px);
+}
+.aviso.visivel{opacity:1;transform:translate(-50%,0)}
+.rodape-nota{padding:22px 20px 26px;font-size:11.5px;color:var(--musgo-claro);text-align:center;line-height:1.5}
+
+/* ---------- prova social e lista contida ---------- */
+.pulso-vivo{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--verde);margin-top:10px}
+.pulso-vivo__bola{width:7px;height:7px;border-radius:50%;background:var(--verde-vivo);box-shadow:0 0 0 0 rgba(52,217,138,.7);animation:batida 2s infinite}
+.painel--rifa .pulso-vivo{color:var(--ambar-esc)}
+.painel--rifa .pulso-vivo__bola{background:var(--ambar)}
+@keyframes batida{0%{box-shadow:0 0 0 0 rgba(52,217,138,.6)}70%{box-shadow:0 0 0 9px rgba(52,217,138,0)}100%{box-shadow:0 0 0 0 rgba(52,217,138,0)}}
+.recado{margin-top:12px;padding:12px 14px;border-radius:15px;background:var(--nevoa);font-size:13px;color:var(--verde-esc);line-height:1.45}
+.recado b{font-weight:700}
+.recado--rifa{background:var(--ambar-nevoa);color:var(--ambar-esc)}
+.caixa-lista{max-height:264px;overflow-y:auto;border:1px solid var(--linha);border-radius:18px;padding:2px 14px;scrollbar-width:thin}
+.caixa-lista.aberta{max-height:420px}
+.resto-lista{display:flex;align-items:center;gap:10px;width:100%;margin-top:10px;padding:11px 14px;border-radius:14px;background:var(--nevoa);font-size:13px;color:var(--verde-esc);font-weight:600;text-align:left}
+.resto-lista span:last-child{margin-left:auto;color:var(--musgo);font-weight:500}
+.medalha{width:20px;height:20px;border-radius:7px;display:grid;place-items:center;font-size:10px;font-weight:700;background:var(--nevoa-forte);color:var(--verde-esc);flex:none}
+
+/* ---------- pagamento pix ---------- */
+.pix-caixa{display:grid;justify-items:center;gap:12px;padding:6px 0 2px}
+.pix-qr{width:212px;height:212px;max-width:100%;border-radius:18px;background:#fff;border:1.5px solid var(--linha);display:grid;place-items:center;padding:10px;animation:pipoca-foto .45s var(--mola) both}
+.pix-qr img,.pix-qr canvas{width:100%!important;height:100%!important;display:block}
+.pix-valor{font-family:"Bricolage Grotesque",Georgia,serif;font-size:26px;font-weight:800;color:var(--verde-esc);letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.folha--rifa .pix-valor{color:var(--ambar-esc)}
+.pix-codigo{width:100%;font-family:"DM Mono",Consolas,monospace;font-size:11.5px;line-height:1.5;color:var(--musgo);background:var(--nevoa);border-radius:14px;padding:12px 14px;word-break:break-all;max-height:84px;overflow-y:auto}
+.pix-espera{display:flex;align-items:center;justify-content:center;gap:9px;font-size:13px;color:var(--musgo);margin-top:4px}
+.girador{width:15px;height:15px;border-radius:50%;border:2px solid var(--nevoa-forte);border-top-color:var(--verde);animation:girar .8s linear infinite;flex:none}
+.folha--rifa .girador{border-top-color:var(--ambar)}
+@keyframes girar{to{transform:rotate(360deg)}}
+.pix-passos{width:100%;margin:2px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:7px}
+.pix-passos li{display:flex;gap:9px;font-size:12.5px;color:var(--musgo);align-items:flex-start}
+.contagem{font-variant-numeric:tabular-nums;font-weight:600;color:var(--verde-esc)}
+
+/* ---------- spans que precisam empilhar ---------- */
+.cartao__nome,.cartao__texto,.organizador__nome,.organizador__sub,
+.apoiador__nome,.apoiador__msg,.interruptor__texto,.interruptor__sub,
+.pacote__qtd,.pacote__un,.mostrador__rotulo{display:block}
+.cartao>span:nth-child(2),.interruptor>span:first-child,.apoiador>span:nth-child(2),.pacote>span:first-child{min-width:0}
+.entrada-valor.pulso,.contador__num.pulso{animation:pulso .32s var(--mola)}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important}
+}
+</style>
+</head>
+<body>
+
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-seta" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-voltar" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></symbol>
+    <symbol id="i-mais" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></symbol>
+    <symbol id="i-camera" viewBox="0 0 24 24"><path d="M3 8.5A2.5 2.5 0 0 1 5.5 6h1.7l1.1-1.7A1 1 0 0 1 9.1 4h5.8a1 1 0 0 1 .8.3L16.8 6h1.7A2.5 2.5 0 0 1 21 8.5v9A2.5 2.5 0 0 1 18.5 20h-13A2.5 2.5 0 0 1 3 17.5z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><circle cx="12" cy="13" r="3.4" fill="none" stroke="currentColor" stroke-width="1.7"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.6 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-coracao" viewBox="0 0 24 24"><path d="M12 20s-7.2-4.4-9.1-8.5C1.3 8 3.2 4.6 6.6 4.6c2 0 3.5 1.1 4.4 2.5.9-1.4 2.4-2.5 4.4-2.5 3.4 0 5.3 3.4 3.7 6.9C19.2 15.6 12 20 12 20z" fill="currentColor"/></symbol>
+    <symbol id="i-gente" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3.5 19c.6-3 2.8-4.6 5.5-4.6S14 16 14.5 19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M16.2 6.2a3 3 0 0 1 0 5.6M17.5 14.6c2 .5 3.3 2 3.7 4.4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-relogio" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 7.3V12l3 1.8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-copiar" viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2.6" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M15 6.5A2.5 2.5 0 0 0 12.5 4h-6A2.5 2.5 0 0 0 4 6.5v6A2.5 2.5 0 0 0 6.5 15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+  </defs>
+</svg>
+
+<main class="fone">
+
+  <!-- ============ TELA 1: ESCOLHA ============ -->
+  <section class="tela ativa" id="tela-escolha">
+    <div class="rolagem">
+      <header class="abertura">
+        <div class="marca">
+          <span class="marca__selo"><svg width="14" height="14" fill="#fff"><use href="#i-coracao"/></svg></span>
+          Growdy
+        </div>
+        <h1 style="margin-top:22px">O que você vai<br>colocar no ar hoje?</h1>
+        <p class="legenda">Monte a página em três passos, compartilhe o link e acompanhe cada contribuição chegando.</p>
+      </header>
+
+      <div class="cartoes">
+        <button class="cartao" data-tipo="doacao">
+          <span class="cartao__arte">
+            <svg width="34" height="34" viewBox="0 0 48 48" aria-hidden="true">
+              <path d="M24 39s-13-8.2-16.3-15.2C4.6 17.2 8.2 11 14.4 11c3.6 0 6.3 2 7.6 4.4h4c1.3-2.4 4-4.4 7.6-4.4 6.2 0 9.8 6.2 6.7 12.8C37 30.8 24 39 24 39z" fill="#00A15C" opacity=".18"/>
+              <path d="M24 35.5S13.4 28.8 10.7 23C8.1 17.6 11 12.5 16.1 12.5c2.9 0 5.2 1.7 6.2 3.6h3.4c1-1.9 3.3-3.6 6.2-3.6 5.1 0 8 5.1 5.4 10.5-2.7 5.8-13.3 12.5-13.3 12.5z" fill="none" stroke="#00A15C" stroke-width="2.4" stroke-linejoin="round"/>
+            </svg>
+          </span>
+          <span>
+            <span class="cartao__nome">Vaquinha</span>
+            <span class="cartao__texto">Quem apoia escolhe quanto quer doar. Você define uma meta e acompanha a barra encher.</span>
+          </span>
+          <svg class="cartao__seta" width="20" height="20"><use href="#i-seta"/></svg>
+        </button>
+
+        <button class="cartao cartao--rifa" data-tipo="rifa">
+          <span class="cartao__arte">
+            <svg width="34" height="34" viewBox="0 0 48 48" aria-hidden="true">
+              <path d="M8 16.5a2.5 2.5 0 0 1 2.5-2.5h27a2.5 2.5 0 0 1 2.5 2.5V21a3 3 0 0 0 0 6v4.5a2.5 2.5 0 0 1-2.5 2.5h-27A2.5 2.5 0 0 1 8 31.5V27a3 3 0 0 0 0-6z" fill="#E2891B" opacity=".16"/>
+              <path d="M8 16.5a2.5 2.5 0 0 1 2.5-2.5h27a2.5 2.5 0 0 1 2.5 2.5V21a3 3 0 0 0 0 6v4.5a2.5 2.5 0 0 1-2.5 2.5h-27A2.5 2.5 0 0 1 8 31.5V27a3 3 0 0 0 0-6z" fill="none" stroke="#E2891B" stroke-width="2.4" stroke-linejoin="round"/>
+              <path d="M24 16.5v3M24 22.5v3M24 28.5v3" stroke="#E2891B" stroke-width="2.2" stroke-linecap="round" stroke-dasharray="0.1 5"/>
+            </svg>
+          </span>
+          <span>
+            <span class="cartao__nome">Rifa</span>
+            <span class="cartao__texto">Você define o preço da cota, quantas existem e monta promoções por quantidade.</span>
+          </span>
+          <svg class="cartao__seta" width="20" height="20"><use href="#i-seta"/></svg>
+        </button>
+      </div>
+
+      <div class="como-funciona">
+        <h3>Como funciona</h3>
+        <ol class="passos-lista">
+          <li><span class="bolinha">1</span><span>Conte a história e <b>suba as fotos</b> — a primeira vira a capa.</span></li>
+          <li><span class="bolinha">2</span><span>Defina <b>meta e valores sugeridos</b>, ou <b>cotas e promoções</b>.</span></li>
+          <li><span class="bolinha">3</span><span>Informe a <b>chave Pix</b> que recebe e publique o link.</span></li>
+        </ol>
+      </div>
+      <p class="rodape-nota">Pix processado pela Bass Pago. O dinheiro entra na conta ligada à chave cadastrada.</p>
+    </div>
+  </section>
+
+  <!-- ============ TELA 2: CRIAR ============ -->
+  <section class="tela" id="tela-criar">
+    <header class="topo">
+      <div class="topo__linha">
+        <button class="voltar" id="btn-voltar" aria-label="Voltar"><svg width="19" height="19"><use href="#i-voltar"/></svg></button>
+        <span class="topo__titulo" id="topo-titulo">Nova vaquinha</span>
+        <span class="topo__passo" id="topo-passo">1 de 3</span>
+      </div>
+      <div class="trilho"><div class="trilho__fita" id="trilho-fita" style="width:33%"></div></div>
+    </header>
+
+    <div class="rolagem" id="rolagem-criar">
+      <!-- passo 1 -->
+      <div class="miolo passo" data-passo="1">
+        <p class="olho">Passo 1 — a história</p>
+        <h2 id="p1-titulo">Do que se trata?</h2>
+        <p class="legenda" id="p1-legenda">Um título direto e uma foto boa fazem a maior parte do trabalho.</p>
+
+        <label class="campo" for="f-titulo">
+          <span class="campo__nome">Título <span class="campo__dica" id="conta-titulo">0/60</span></span>
+          <input class="entrada" id="f-titulo" maxlength="60" placeholder="Ex.: Reforma da quadra do Jardim União">
+        </label>
+        <p class="erro" id="erro-titulo">Dê um título para a campanha.</p>
+
+        <label class="campo" for="f-descricao">
+          <span class="campo__nome">A história</span>
+          <textarea class="entrada" id="f-descricao" rows="5" placeholder="Explique para que serve o dinheiro, quem organiza e o que muda quando a meta for batida."></textarea>
+        </label>
+
+        <div class="campo">
+          <span class="campo__nome">Fotos <span class="campo__dica">a 1ª é a capa · até 6</span></span>
+          <div class="grade-fotos" id="grade-fotos"></div>
+          <input type="file" id="entrada-fotos" accept="image/*" multiple hidden>
+        </div>
+        <div style="height:24px"></div>
+      </div>
+
+      <!-- passo 2 — doação -->
+      <div class="miolo passo" data-passo="2" data-so="doacao" hidden>
+        <p class="olho">Passo 2 — o dinheiro</p>
+        <h2>Meta e valores sugeridos</h2>
+        <p class="legenda">Quem doa sempre pode digitar o próprio valor. Os sugeridos só encurtam o caminho.</p>
+
+        <label class="campo" for="f-meta">
+          <span class="campo__nome">Meta da vaquinha</span>
+          <span class="prefixo"><span class="prefixo__sinal">R$</span><input class="entrada" id="f-meta" inputmode="numeric" placeholder="0,00"></span>
+        </label>
+        <p class="erro" id="erro-meta">Defina uma meta maior que zero.</p>
+
+        <div class="campo">
+          <span class="campo__nome">Valores sugeridos</span>
+          <div class="mini-valores">
+            <span class="prefixo"><span class="prefixo__sinal">R$</span><input class="entrada v-sugerido" id="f-v1" inputmode="numeric"></span>
+            <span class="prefixo"><span class="prefixo__sinal">R$</span><input class="entrada v-sugerido" id="f-v2" inputmode="numeric"></span>
+            <span class="prefixo"><span class="prefixo__sinal">R$</span><input class="entrada v-sugerido" id="f-v3" inputmode="numeric"></span>
+            <span class="prefixo"><span class="prefixo__sinal">R$</span><input class="entrada v-sugerido" id="f-v4" inputmode="numeric"></span>
+          </div>
+        </div>
+
+        <button class="interruptor ligado" id="f-livre" aria-pressed="true">
+          <span>
+            <span class="interruptor__texto">Aceitar outro valor</span>
+            <span class="interruptor__sub">Abre o teclado para o doador digitar quanto quiser</span>
+          </span>
+          <span class="chave" style="margin-left:auto"></span>
+        </button>
+
+        <button class="interruptor ligado" id="f-anonimo" aria-pressed="true">
+          <span>
+            <span class="interruptor__texto">Permitir doação anônima</span>
+            <span class="interruptor__sub">O nome não aparece na lista de apoiadores</span>
+          </span>
+          <span class="chave" style="margin-left:auto"></span>
+        </button>
+        <div style="height:24px"></div>
+      </div>
+
+      <!-- passo 2 — rifa -->
+      <div class="miolo passo" data-passo="2" data-so="rifa" hidden>
+        <p class="olho">Passo 2 — as cotas</p>
+        <h2>Preço, quantidade e promoções</h2>
+        <p class="legenda">A promoção por quantidade é o que faz a pessoa levar cinco em vez de uma.</p>
+
+        <label class="campo" for="f-premio">
+          <span class="campo__nome">Prêmio</span>
+          <input class="entrada" id="f-premio" maxlength="70" placeholder="Ex.: Air Fryer 12L + churrasco no domingo">
+        </label>
+        <p class="erro" id="erro-premio">Diga o que a pessoa ganha.</p>
+
+        <div class="campo">
+          <span class="campo__nome">Cota</span>
+          <div class="dupla">
+            <span class="prefixo"><span class="prefixo__sinal">R$</span><input class="entrada" id="f-preco" inputmode="numeric" placeholder="0,00"></span>
+            <span class="prefixo"><span class="prefixo__sinal" style="font-size:12px">nº</span><input class="entrada" id="f-cotas" inputmode="numeric" placeholder="200"></span>
+          </div>
+          <p class="erro" id="erro-preco">Preencha o preço e a quantidade de cotas.</p>
+        </div>
+
+        <label class="campo" for="f-sorteio">
+          <span class="campo__nome">Data do sorteio <span class="campo__dica">opcional</span></span>
+          <input class="entrada" id="f-sorteio" type="date">
+        </label>
+
+        <div class="campo">
+          <span class="campo__nome">Promoções por quantidade <span class="campo__dica" id="dica-promo">preço fechado do combo</span></span>
+          <div id="lista-promos"></div>
+          <button class="add-promo" id="btn-add-promo">+ Adicionar promoção</button>
+        </div>
+
+        <button class="interruptor ligado" id="f-restantes" aria-pressed="true">
+          <span>
+            <span class="interruptor__texto">Mostrar cotas restantes</span>
+            <span class="interruptor__sub">Cria pressa quando estiver acabando</span>
+          </span>
+          <span class="chave" style="margin-left:auto"></span>
+        </button>
+        <div style="height:24px"></div>
+      </div>
+
+      <!-- passo 3 -->
+      <div class="miolo passo" data-passo="3" hidden>
+        <p class="olho">Passo 3 — recebimento</p>
+        <h2>Para onde vai o dinheiro</h2>
+        <p class="legenda">A Growdy recebe os Pix da campanha e repassa para a sua chave. Quem apoia vê o seu nome na página.</p>
+
+        <label class="campo" for="f-organizador">
+          <span class="campo__nome">Quem organiza</span>
+          <input class="entrada" id="f-organizador" maxlength="40" placeholder="Nome ou nome do grupo">
+        </label>
+        <p class="erro" id="erro-organizador">Diga quem está organizando.</p>
+
+        <label class="campo" for="f-pix">
+          <span class="campo__nome">Chave Pix para o repasse</span>
+          <input class="entrada" id="f-pix" placeholder="CPF, telefone, e-mail ou chave aleatória">
+        </label>
+        <p class="erro" id="erro-pix">Informe a chave que vai receber.</p>
+
+        <div class="painel" id="resumo-final" style="margin-top:22px"></div>
+        <p class="rodape-nota" style="padding-bottom:10px">Ao publicar você confirma que a arrecadação é real e que entrega o combinado.</p>
+      </div>
+    </div>
+
+    <div class="barra-acao">
+      <button class="btn btn--fantasma" id="btn-anterior" hidden aria-label="Passo anterior"><svg width="20" height="20"><use href="#i-voltar"/></svg></button>
+      <button class="btn btn--principal" id="btn-proximo">Continuar</button>
+    </div>
+  </section>
+
+  <!-- ============ TELA 3: PÁGINA PÚBLICA ============ -->
+  <section class="tela" id="tela-publica">
+    <div class="rolagem" id="rolagem-publica">
+      <div class="capa">
+        <div class="carrossel" id="pub-carrossel"></div>
+        <div class="capa__sombra"></div>
+        <div class="pontos" id="pub-pontos"></div>
+        <button class="voltar-flutuante" id="btn-editar" aria-label="Voltar para a edição"><svg width="19" height="19"><use href="#i-voltar"/></svg></button>
+        <span class="selo-exemplo">prévia</span>
+      </div>
+
+      <div class="publica__corpo">
+        <span class="etiqueta" id="pub-etiqueta">Vaquinha</span>
+        <h1 style="margin-top:12px" id="pub-titulo">—</h1>
+
+        <div class="organizador">
+          <span class="avatar" id="pub-inicial">J</span>
+          <span>
+            <span class="organizador__nome" id="pub-organizador">—</span>
+            <span class="organizador__sub" id="pub-sub">recebe via Pix</span>
+          </span>
+          <span class="verificado">Pix ativo</span>
+        </div>
+
+        <div class="painel" id="pub-painel">
+          <div class="valor-principal" id="pub-valor">R$ 0</div>
+          <div class="valor-apoio" id="pub-apoio">de uma meta de R$ 0</div>
+          <div class="progresso"><div class="progresso__fita" id="pub-fita"></div></div>
+          <div class="progresso-legenda">
+            <span id="pub-leg-a">0%</span>
+            <span id="pub-leg-b">—</span>
+          </div>
+          <div class="tres" id="pub-tijolos"></div>
+          <div class="pulso-vivo" id="pub-pulso" hidden><span class="pulso-vivo__bola"></span><span id="pub-pulso-txt"></span></div>
+        </div>
+
+        <div class="recado" id="pub-recado"></div>
+
+        <div class="secao" id="secao-vitrine" hidden>
+          <div class="secao__titulo">Promoções</div>
+          <div class="pacotes-vitrine" id="pub-vitrine"></div>
+        </div>
+
+        <div class="secao">
+          <div class="secao__titulo">A história</div>
+          <p class="texto-longo" id="pub-descricao">—</p>
+        </div>
+
+        <div class="secao">
+          <div class="secao__titulo" id="titulo-apoiadores">Quem já apoiou</div>
+          <div class="caixa-lista" id="caixa-apoiadores"><div id="pub-apoiadores"></div></div>
+          <button class="resto-lista" id="pub-resto" hidden></button>
+        </div>
+
+        <p class="rodape-nota" id="pub-rodape">Pagamento por Pix, direto na conta de quem organiza.</p>
+      </div>
+    </div>
+
+    <div class="barra-acao">
+      <button class="btn btn--principal btn__brilho" id="btn-apoiar">Doar agora</button>
+    </div>
+  </section>
+</main>
+
+<div class="cortina" id="cortina"></div>
+
+<!-- folha de doação -->
+<section class="folha" id="folha-doacao" aria-hidden="true">
+  <div class="folha__alca" data-alca><span></span></div>
+  <div class="folha__topo">
+    <span class="folha__titulo">Quanto você quer doar?</span>
+    <button class="folha__fechar" data-fechar aria-label="Fechar"><svg width="16" height="16"><use href="#i-x"/></svg></button>
+  </div>
+  <div class="folha__rolagem">
+    <div class="mostrador">
+      <div class="mostrador__rotulo">valor da doação</div>
+      <input class="entrada-valor" id="doacao-valor" inputmode="numeric" value="R$ 50,00" aria-label="Valor da doação">
+    </div>
+    <div class="chips" id="doacao-chips" style="justify-content:center"></div>
+    <label class="campo" for="doacao-nome">
+      <span class="campo__nome">Seu nome</span>
+      <input class="entrada" id="doacao-nome" maxlength="30" placeholder="Como quer aparecer na lista">
+    </label>
+    <label class="campo" for="doacao-msg">
+      <span class="campo__nome">Recado <span class="campo__dica">opcional</span></span>
+      <input class="entrada" id="doacao-msg" maxlength="60" placeholder="Uma palavra de força">
+    </label>
+    <button class="interruptor" id="doacao-anonimo" aria-pressed="false">
+      <span><span class="interruptor__texto">Doar como anônimo</span></span>
+      <span class="chave" style="margin-left:auto"></span>
+    </button>
+    <div style="height:16px"></div>
+  </div>
+  <div class="folha__pe">
+    <button class="btn btn--principal" id="btn-confirmar-doacao" style="width:100%">Doar R$ 50,00 no Pix</button>
+  </div>
+</section>
+
+<!-- folha da rifa -->
+<section class="folha" id="folha-rifa" aria-hidden="true">
+  <div class="folha__alca" data-alca><span></span></div>
+  <div class="folha__topo">
+    <span class="folha__titulo">Quantas cotas?</span>
+    <button class="folha__fechar" data-fechar aria-label="Fechar"><svg width="16" height="16"><use href="#i-x"/></svg></button>
+  </div>
+  <div class="folha__rolagem">
+    <div class="contador">
+      <button class="contador__btn" id="cota-menos" aria-label="Menos uma cota">−</button>
+      <span class="contador__num" id="cota-num">1</span>
+      <button class="contador__btn" id="cota-mais" aria-label="Mais uma cota">+</button>
+    </div>
+    <p style="text-align:center;font-size:12.5px;color:var(--musgo);margin:0" id="cota-unitario">—</p>
+    <div id="lista-pacotes" style="margin-top:16px"></div>
+    <div class="resumo resumo--rifa">
+      <span class="resumo__rot" id="resumo-rot">1 cota</span>
+      <span class="resumo__valor" id="resumo-total">R$ 0,00</span>
+    </div>
+    <label class="campo" for="rifa-nome">
+      <span class="campo__nome">Seu nome</span>
+      <input class="entrada" id="rifa-nome" maxlength="30" placeholder="Quem fica com as cotas">
+    </label>
+    <label class="campo" for="rifa-tel">
+      <span class="campo__nome">WhatsApp <span class="campo__dica">para avisar do sorteio</span></span>
+      <input class="entrada" id="rifa-tel" inputmode="tel" placeholder="(00) 00000-0000">
+    </label>
+    <div style="height:16px"></div>
+  </div>
+  <div class="folha__pe">
+    <button class="btn btn--ambar" id="btn-confirmar-rifa" style="width:100%">Pagar no Pix</button>
+  </div>
+</section>
+
+<!-- folha do pagamento pix -->
+<section class="folha" id="folha-pix" aria-hidden="true">
+  <div class="folha__alca" data-alca><span></span></div>
+  <div class="folha__topo">
+    <span class="folha__titulo">Pague com Pix</span>
+    <button class="folha__fechar" data-fechar aria-label="Fechar"><svg width="16" height="16"><use href="#i-x"/></svg></button>
+  </div>
+  <div class="folha__rolagem">
+    <div class="pix-caixa">
+      <div class="pix-valor" id="pix-valor">R$ 0,00</div>
+      <div class="pix-qr" id="pix-qr"></div>
+      <div class="pix-espera" id="pix-espera"><span class="girador"></span><span>Esperando o pagamento cair…</span></div>
+      <div class="pix-codigo" id="pix-codigo">—</div>
+      <button class="btn btn--fantasma" id="pix-copiar" style="width:100%;flex:none">Copiar código Pix</button>
+      <ul class="pix-passos">
+        <li><span class="bolinha">1</span><span>Abra o app do banco e escolha Pix &gt; Ler QR Code, ou cole o código copiado.</span></li>
+        <li><span class="bolinha">2</span><span>Confira o valor e confirme.</span></li>
+        <li><span class="bolinha">3</span><span>Esta tela reconhece o pagamento sozinha — pode deixar aberta.</span></li>
+      </ul>
+      <p class="rodape-nota" style="padding:8px 0 0">O código vale por <span class="contagem" id="pix-prazo">30:00</span>.</p>
+    </div>
+  </div>
+  <div class="folha__pe">
+    <button class="btn btn--fantasma" id="pix-cancelar" style="width:100%;flex:none">Cancelar</button>
+  </div>
+</section>
+
+<!-- folha de sucesso -->
+<section class="folha" id="folha-sucesso" aria-hidden="true">
+  <div class="folha__alca" data-alca><span></span></div>
+  <div class="folha__rolagem" id="sucesso-corpo"></div>
+  <div class="folha__pe">
+    <button class="btn btn--principal" id="btn-fechar-sucesso" style="width:100%">Voltar para a página</button>
+  </div>
+</section>
+
+<canvas id="confete" hidden></canvas>
+<div class="aviso" id="aviso" role="status"></div>
+<div class="rodape-desktop">Desenhado para o celular — estreite a janela ou abra no telefone.</div>
+
+<script>
+/* ============ utilidades ============ */
+const $ = (s, r) => (r || document).querySelector(s);
+const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
+const brl = n => n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+const brlCurto = n => "R$ " + Math.round(n).toLocaleString("pt-BR");
+const soDigitos = s => (s || "").replace(/\D/g, "");
+const menosMovimento = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+function aviso(txt) {
+  const el = $("#aviso");
+  el.textContent = txt;
+  el.classList.add("visivel");
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.remove("visivel"), 2600);
+}
+
+function animarNumero(el, de, ate, formata, dur) {
+  if (menosMovimento || de === ate) { el.textContent = formata(ate); return; }
+  const t0 = performance.now(), d = dur || 900;
+  (function passo(t) {
+    const p = Math.min(1, (t - t0) / d);
+    const e = 1 - Math.pow(1 - p, 3);
+    el.textContent = formata(de + (ate - de) * e);
+    if (p < 1) requestAnimationFrame(passo);
+  })(t0);
+}
+
+/* fotos de exemplo desenhadas em SVG, para a página nunca abrir vazia */
+function fotoExemplo(qual) {
+  const arte = {
+    quadra: '<defs><linearGradient id="a" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#BFEAD3"/><stop offset="1" stop-color="#6FCB9B"/></linearGradient></defs>' +
+      '<rect width="400" height="320" fill="url(#a)"/><circle cx="318" cy="62" r="34" fill="#FFF0C9"/>' +
+      '<rect x="0" y="196" width="400" height="124" fill="#2E8A5E"/>' +
+      '<rect x="44" y="214" width="312" height="92" rx="6" fill="none" stroke="#DFF6E9" stroke-width="3"/>' +
+      '<line x1="200" y1="214" x2="200" y2="306" stroke="#DFF6E9" stroke-width="3"/>' +
+      '<circle cx="200" cy="260" r="26" fill="none" stroke="#DFF6E9" stroke-width="3"/>' +
+      '<rect x="36" y="118" width="16" height="80" fill="#0E5B3A"/><rect x="26" y="106" width="36" height="24" rx="4" fill="#0E5B3A"/>' +
+      '<rect x="348" y="118" width="16" height="80" fill="#0E5B3A"/><rect x="338" y="106" width="36" height="24" rx="4" fill="#0E5B3A"/>' +
+      '<circle cx="258" cy="240" r="13" fill="#FFF8E7" stroke="#0E5B3A" stroke-width="2"/>',
+    gente: '<rect width="400" height="320" fill="#EAF7F0"/>' +
+      '<circle cx="110" cy="128" r="46" fill="#00A15C" opacity=".22"/><circle cx="200" cy="108" r="54" fill="#00A15C" opacity=".34"/><circle cx="292" cy="130" r="44" fill="#00A15C" opacity=".2"/>' +
+      '<path d="M40 300c8-58 36-88 70-88s62 30 70 88z" fill="#06623B" opacity=".55"/>' +
+      '<path d="M122 306c9-66 41-100 78-100s69 34 78 100z" fill="#06623B" opacity=".8"/>' +
+      '<path d="M236 300c8-58 36-88 70-88s62 30 70 88z" fill="#06623B" opacity=".55"/>',
+    premio: '<defs><linearGradient id="b" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFE9C6"/><stop offset="1" stop-color="#F6C377"/></linearGradient></defs>' +
+      '<rect width="400" height="320" fill="url(#b)"/>' +
+      '<rect x="128" y="86" width="150" height="168" rx="22" fill="#3B2A16"/>' +
+      '<rect x="146" y="112" width="114" height="74" rx="12" fill="#F7A53B"/>' +
+      '<circle cx="203" cy="216" r="18" fill="none" stroke="#F7A53B" stroke-width="6"/>' +
+      '<path d="M203 204v12l8 6" stroke="#3B2A16" stroke-width="4" stroke-linecap="round" fill="none"/>' +
+      '<path d="M74 78l9 22 22 9-22 9-9 22-9-22-22-9 22-9z" fill="#fff" opacity=".85"/>' +
+      '<path d="M326 196l7 17 17 7-17 7-7 17-7-17-17-7 17-7z" fill="#fff" opacity=".7"/>',
+    churrasco: '<rect width="400" height="320" fill="#FFF3E0"/>' +
+      '<circle cx="200" cy="150" r="96" fill="#E2891B" opacity=".18"/>' +
+      '<rect x="92" y="188" width="216" height="26" rx="13" fill="#4A3418"/>' +
+      '<rect x="112" y="150" width="176" height="14" rx="7" fill="#C56A2E"/>' +
+      '<rect x="112" y="124" width="176" height="14" rx="7" fill="#C56A2E"/>' +
+      '<path d="M140 108c-10-14 6-22-2-36M200 104c-10-14 6-22-2-36M260 108c-10-14 6-22-2-36" stroke="#E2891B" stroke-width="7" stroke-linecap="round" fill="none" opacity=".6"/>' +
+      '<rect x="122" y="214" width="20" height="66" rx="6" fill="#4A3418"/><rect x="258" y="214" width="20" height="66" rx="6" fill="#4A3418"/>'
+  }[qual];
+  return "data:image/svg+xml;utf8," + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="320" viewBox="0 0 400 320">' + arte + "</svg>");
+}
+
+/* ============ estado ============ */
+const padrao = {
+  doacao: {
+    titulo: "Reforma da quadra do Jardim União",
+    descricao: "A quadra é o único lugar do bairro onde as crianças jogam à tarde. O piso rachou no inverno e duas traves estão soltas.\n\nOrçamos com o pedreiro da rua: R$ 8.000 cobrem o piso novo, a pintura das linhas e as duas traves. Tudo que passar disso vira rede e bolas.",
+    meta: 8000,
+    valores: [25, 50, 100, 200],
+    livre: true,
+    anonimo: true,
+    fotos: [fotoExemplo("quadra"), fotoExemplo("gente")]
+  },
+  rifa: {
+    titulo: "Rifa da Air Fryer — churrasco do Zé",
+    premio: "Air Fryer 12L + 5 kg de picanha",
+    descricao: "Rifa para bancar o churrasco de fim de ano do time. Sorteio pela Loteria Federal, pelo primeiro prêmio.\n\nA foto do bilhete vai pro grupo assim que o Pix cair. Quem levar 10 cotas entra também no sorteio de um caixa de cerveja.",
+    preco: 10,
+    cotas: 200,
+    sorteio: "",
+    promos: [{ qtd: 3, preco: 25 }, { qtd: 5, preco: 35 }, { qtd: 10, preco: 60 }],
+    restantes: true,
+    fotos: [fotoExemplo("premio"), fotoExemplo("churrasco")]
+  },
+  organizador: "",
+  pix: ""
+};
+
+// números reais da campanha publicada; enquanto ninguém apoiou, tudo é zero
+const resumoVazio = {
+  arrecadado: 0, apoiadores: 0, cotasVendidas: 0, cotasRestantes: 0,
+  ultimas24h: 0, valorTipico: 0, destaques: [], recentes: []
+};
+let resumo = { ...resumoVazio };
+let campanhaId = null;
+
+let est = JSON.parse(JSON.stringify(padrao));
+let tipo = "doacao";
+let passo = 1;
+let publicado = false;
+const atual = () => est[tipo];
+
+/* rascunho no aparelho de quem usa (some se o navegador limpar) */
+function salvar() {
+  clearTimeout(salvar._t);
+  salvar._t = setTimeout(() => {
+    try { localStorage.setItem("vaquinha-rascunho", JSON.stringify({ est, tipo })); }
+    catch (e) {
+      try {
+        const leve = JSON.parse(JSON.stringify(est));
+        leve.doacao.fotos = []; leve.rifa.fotos = [];
+        localStorage.setItem("vaquinha-rascunho", JSON.stringify({ est: leve, tipo }));
+      } catch (e2) { /* sem espaço: segue sem rascunho */ }
+    }
+  }, 500);
+}
+function carregar() {
+  try {
+    const cru = localStorage.getItem("vaquinha-rascunho");
+    if (!cru) return;
+    const d = JSON.parse(cru);
+    if (d && d.est && d.est.doacao && d.est.rifa) { est = d.est; tipo = d.tipo || "doacao"; }
+  } catch (e) { /* rascunho ilegível: começa do exemplo */ }
+}
+
+/* ============ navegação entre telas ============ */
+const telas = { escolha: $("#tela-escolha"), criar: $("#tela-criar"), publica: $("#tela-publica") };
+function irPara(nome, tras) {
+  Object.keys(telas).forEach(k => telas[k].classList.remove("ativa", "voltando"));
+  const alvo = telas[nome];
+  alvo.classList.add("ativa");
+  if (tras) alvo.classList.add("voltando");
+  const rol = $(".rolagem", alvo);
+  if (rol) rol.scrollTop = 0;
+}
+
+/* ============ passos ============ */
+function montarPasso() {
+  $$(".passo").forEach(p => {
+    const casa = +p.dataset.passo === passo && (!p.dataset.so || p.dataset.so === tipo);
+    p.hidden = !casa;
+  });
+  $("#trilho-fita").style.width = (passo / 3) * 100 + "%";
+  $("#topo-passo").textContent = passo + " de 3";
+  $("#topo-titulo").textContent = tipo === "doacao" ? "Nova vaquinha" : "Nova rifa";
+  $("#btn-anterior").hidden = passo === 1;
+  $("#btn-proximo").textContent = passo === 3 ? "Publicar campanha" : "Continuar";
+  $("#btn-proximo").classList.toggle("btn__brilho", passo === 3);
+  $("#rolagem-criar").scrollTop = 0;
+  if (passo === 3) desenharResumo();
+}
+
+function marcarErro(idCampo, idErro, ruim) {
+  $(idCampo).classList.toggle("entrada--erro", ruim);
+  $(idErro).classList.toggle("visivel", ruim);
+  return !ruim;
+}
+
+function validar() {
+  const c = atual();
+  if (passo === 1) return marcarErro("#f-titulo", "#erro-titulo", !c.titulo.trim());
+  if (passo === 2 && tipo === "doacao") return marcarErro("#f-meta", "#erro-meta", !(c.meta > 0));
+  if (passo === 2 && tipo === "rifa") {
+    const okPremio = marcarErro("#f-premio", "#erro-premio", !c.premio.trim());
+    const okCota = c.preco > 0 && c.cotas > 0;
+    $("#f-preco").classList.toggle("entrada--erro", !okCota);
+    $("#f-cotas").classList.toggle("entrada--erro", !okCota);
+    $("#erro-preco").classList.toggle("visivel", !okCota);
+    return okPremio && okCota;
+  }
+  if (passo === 3) {
+    const a = marcarErro("#f-organizador", "#erro-organizador", !est.organizador.trim());
+    const b = marcarErro("#f-pix", "#erro-pix", !est.pix.trim());
+    return a && b;
+  }
+  return true;
+}
+
+/* ============ fotos ============ */
+function desenharFotos() {
+  const grade = $("#grade-fotos");
+  const c = atual();
+  grade.innerHTML = "";
+  c.fotos.forEach((src, i) => {
+    const d = document.createElement("div");
+    d.className = "foto";
+    d.style.animationDelay = i * 40 + "ms";
+    d.innerHTML =
+      '<img src="' + src + '" alt="Foto ' + (i + 1) + ' da campanha">' +
+      '<button class="foto__x" aria-label="Remover foto"><svg width="13" height="13"><use href="#i-x"/></svg></button>' +
+      (i === 0 ? '<span class="foto__capa">capa</span>' : '<button class="foto__virar">virar capa</button>');
+    $(".foto__x", d).onclick = () => { c.fotos.splice(i, 1); desenharFotos(); salvar(); };
+    const virar = $(".foto__virar", d);
+    if (virar) virar.onclick = () => { c.fotos.unshift(c.fotos.splice(i, 1)[0]); desenharFotos(); salvar(); };
+    grade.appendChild(d);
+  });
+  if (c.fotos.length < 6) {
+    const b = document.createElement("button");
+    b.className = "add-foto";
+    b.innerHTML = '<span class="add-foto__conteudo"><svg width="22" height="22"><use href="#i-camera"/></svg>' + (c.fotos.length ? "mais uma" : "adicionar") + "</span>";
+    b.onclick = () => $("#entrada-fotos").click();
+    grade.appendChild(b);
+  }
+}
+
+$("#entrada-fotos").addEventListener("change", ev => {
+  const c = atual();
+  const arquivos = Array.from(ev.target.files || []).slice(0, 6 - c.fotos.length);
+  arquivos.forEach(arq => {
+    const leitor = new FileReader();
+    leitor.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        const lado = 1000;
+        const escala = Math.min(1, lado / Math.max(img.width, img.height));
+        const cv = document.createElement("canvas");
+        cv.width = Math.round(img.width * escala);
+        cv.height = Math.round(img.height * escala);
+        cv.getContext("2d").drawImage(img, 0, 0, cv.width, cv.height);
+        subirFoto(cv.toDataURL("image/jpeg", 0.82))
+          .then(url => { c.fotos.push(url); desenharFotos(); salvar(); })
+          .catch(e => aviso(e.message));
+      };
+      img.onerror = () => aviso("Não consegui abrir essa imagem.");
+      img.src = leitor.result;
+    };
+    leitor.onerror = () => aviso("Não consegui ler o arquivo.");
+    leitor.readAsDataURL(arq);
+  });
+  ev.target.value = "";
+});
+
+/* ============ dono da casa ============
+   Criar campanha e subir foto pedem a senha de administrador. Quem só abre o
+   link para apoiar nunca vê nada disso. */
+function senhaGuardada() {
+  try { return localStorage.getItem("growdy-admin") || ""; } catch (e) { return ""; }
+}
+function guardarSenha(s) {
+  try { s ? localStorage.setItem("growdy-admin", s) : localStorage.removeItem("growdy-admin"); } catch (e) { /* sem espaço: pede de novo depois */ }
+}
+function pedirSenha(motivo) {
+  const s = window.prompt(motivo || "Senha de administrador para criar campanha:");
+  if (s) guardarSenha(s.trim());
+  return s ? s.trim() : "";
+}
+
+// chama o servidor já com a senha; se for recusada, pede de novo e tenta uma vez
+async function comoDono(caminho, opcoes, jaTentou) {
+  let senha = senhaGuardada();
+  if (!senha) senha = pedirSenha();
+  if (!senha) throw new Error("Sem a senha eu não consigo publicar.");
+  const r = await fetch(caminho, {
+    ...opcoes,
+    headers: { "Content-Type": "application/json", "x-admin": senha, ...(opcoes && opcoes.headers) },
+  });
+  let corpo = null;
+  try { corpo = await r.json(); } catch (e) { corpo = null; }
+  if (r.status === 401 && !jaTentou) {
+    guardarSenha("");
+    if (!pedirSenha("Senha incorreta. Tente de novo:")) throw new Error("Senha não confere.");
+    return comoDono(caminho, opcoes, true);
+  }
+  if (!r.ok) throw new Error((corpo && corpo.erro) || "O servidor não respondeu direito.");
+  return corpo;
+}
+
+async function subirFoto(dataURL) {
+  const d = await comoDono("/api/fotos", { method: "POST", body: JSON.stringify({ dados: dataURL }) });
+  return d.url;
+}
+
+/* ============ máscaras ============ */
+function moeda(input, aoMudar) {
+  input.addEventListener("input", () => {
+    const cent = parseInt(soDigitos(input.value) || "0", 10);
+    input.value = (cent / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    aoMudar(cent / 100);
+  });
+}
+function porReais(v) { return v.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+
+/* ============ promoções da rifa ============ */
+function desenharPromos() {
+  const c = est.rifa, lista = $("#lista-promos");
+  lista.innerHTML = "";
+  c.promos.forEach((p, i) => {
+    const linha = document.createElement("div");
+    linha.className = "promo-linha";
+    linha.style.animationDelay = i * 45 + "ms";
+    linha.innerHTML =
+      '<input class="entrada mini" inputmode="numeric" value="' + p.qtd + '" aria-label="Quantidade de cotas do combo">' +
+      '<span class="promo-txt">cotas · R$</span>' +
+      '<input class="entrada medio" inputmode="numeric" value="' + porReais(p.preco) + '" aria-label="Preço do combo">' +
+      '<span class="promo-eco"></span>' +
+      '<button class="promo-x" aria-label="Remover promoção"><svg width="14" height="14"><use href="#i-x"/></svg></button>';
+    const [iQtd, iPreco] = $$(".entrada", linha);
+    const eco = $(".promo-eco", linha);
+    const atualizarEco = () => {
+      const cheio = p.qtd * c.preco;
+      const pc = cheio > 0 ? Math.round((1 - p.preco / cheio) * 100) : 0;
+      eco.textContent = pc > 0 ? "−" + pc + "%" : "sem desconto";
+      eco.style.opacity = pc > 0 ? "1" : ".55";
+    };
+    iQtd.addEventListener("input", () => {
+      iQtd.value = soDigitos(iQtd.value).slice(0, 4);
+      p.qtd = parseInt(iQtd.value || "0", 10);
+      atualizarEco(); salvar();
+    });
+    moeda(iPreco, v => { p.preco = v; atualizarEco(); salvar(); });
+    $(".promo-x", linha).onclick = () => { c.promos.splice(i, 1); desenharPromos(); salvar(); };
+    atualizarEco();
+    lista.appendChild(linha);
+  });
+}
+$("#btn-add-promo").onclick = () => {
+  const c = est.rifa;
+  if (c.promos.length >= 5) { aviso("Cinco promoções já é bastante escolha."); return; }
+  const ultima = c.promos[c.promos.length - 1];
+  const qtd = ultima ? ultima.qtd * 2 : 5;
+  c.promos.push({ qtd: qtd, preco: Math.round(qtd * c.preco * 0.8) });
+  desenharPromos(); salvar();
+};
+
+/* ============ campos do formulário ============ */
+function sincronizarCampos() {
+  const c = atual();
+  $("#f-titulo").value = c.titulo;
+  $("#conta-titulo").textContent = c.titulo.length + "/60";
+  $("#f-descricao").value = c.descricao;
+  $("#p1-titulo").textContent = tipo === "doacao" ? "Do que se trata?" : "O que você vai rifar?";
+  $("#p1-legenda").textContent = tipo === "doacao"
+    ? "Um título direto e uma foto boa fazem a maior parte do trabalho."
+    : "A foto do prêmio é o que vende a cota. Capriche nela.";
+  $("#f-titulo").placeholder = tipo === "doacao" ? "Ex.: Reforma da quadra do Jardim União" : "Ex.: Rifa da Air Fryer — churrasco do Zé";
+  if (tipo === "doacao") {
+    $("#f-meta").value = porReais(c.meta);
+    c.valores.forEach((v, i) => { $("#f-v" + (i + 1)).value = porReais(v); });
+    $("#f-livre").classList.toggle("ligado", c.livre);
+    $("#f-anonimo").classList.toggle("ligado", c.anonimo);
+  } else {
+    $("#f-premio").value = c.premio;
+    $("#f-preco").value = porReais(c.preco);
+    $("#f-cotas").value = c.cotas;
+    $("#f-sorteio").value = c.sorteio || "";
+    $("#f-restantes").classList.toggle("ligado", c.restantes);
+    desenharPromos();
+  }
+  $("#f-organizador").value = est.organizador;
+  $("#f-pix").value = est.pix;
+  desenharFotos();
+}
+
+$("#f-titulo").addEventListener("input", e => {
+  atual().titulo = e.target.value;
+  $("#conta-titulo").textContent = e.target.value.length + "/60";
+  e.target.classList.remove("entrada--erro"); $("#erro-titulo").classList.remove("visivel");
+  salvar();
+});
+$("#f-descricao").addEventListener("input", e => { atual().descricao = e.target.value; salvar(); });
+moeda($("#f-meta"), v => { est.doacao.meta = v; $("#f-meta").classList.remove("entrada--erro"); $("#erro-meta").classList.remove("visivel"); salvar(); });
+[1, 2, 3, 4].forEach(i => moeda($("#f-v" + i), v => { est.doacao.valores[i - 1] = v; salvar(); }));
+$("#f-premio").addEventListener("input", e => { est.rifa.premio = e.target.value; e.target.classList.remove("entrada--erro"); $("#erro-premio").classList.remove("visivel"); salvar(); });
+moeda($("#f-preco"), v => { est.rifa.preco = v; $("#f-preco").classList.remove("entrada--erro"); $("#erro-preco").classList.remove("visivel"); desenharPromos(); salvar(); });
+$("#f-cotas").addEventListener("input", e => {
+  e.target.value = soDigitos(e.target.value).slice(0, 5);
+  est.rifa.cotas = parseInt(e.target.value || "0", 10);
+  e.target.classList.remove("entrada--erro"); $("#erro-preco").classList.remove("visivel");
+  salvar();
+});
+$("#f-sorteio").addEventListener("change", e => { est.rifa.sorteio = e.target.value; salvar(); });
+$("#f-organizador").addEventListener("input", e => { est.organizador = e.target.value; e.target.classList.remove("entrada--erro"); $("#erro-organizador").classList.remove("visivel"); salvar(); });
+$("#f-pix").addEventListener("input", e => { est.pix = e.target.value; e.target.classList.remove("entrada--erro"); $("#erro-pix").classList.remove("visivel"); salvar(); });
+
+function ligarInterruptor(id, aoTrocar) {
+  const el = $(id);
+  el.addEventListener("click", () => {
+    const ligado = !el.classList.contains("ligado");
+    el.classList.toggle("ligado", ligado);
+    el.setAttribute("aria-pressed", String(ligado));
+    aoTrocar(ligado); salvar();
+  });
+}
+ligarInterruptor("#f-livre", v => { est.doacao.livre = v; });
+ligarInterruptor("#f-anonimo", v => { est.doacao.anonimo = v; });
+ligarInterruptor("#f-restantes", v => { est.rifa.restantes = v; });
+
+/* ============ resumo do passo 3 ============ */
+function desenharResumo() {
+  const c = atual(), cx = $("#resumo-final");
+  cx.className = "painel" + (tipo === "rifa" ? " painel--rifa" : "");
+  const linhas = tipo === "doacao"
+    ? [["Meta", brl(c.meta)], ["Valores sugeridos", c.valores.filter(v => v > 0).map(v => brlCurto(v)).join(" · ") || "nenhum"], ["Outro valor", c.livre ? "permitido" : "só os sugeridos"]]
+    : [["Prêmio", c.premio || "—"], ["Cota", brl(c.preco) + " · " + c.cotas + " cotas"], ["Promoções", c.promos.length ? c.promos.map(p => p.qtd + "x " + brlCurto(p.preco)).join(" · ") : "nenhuma"], ["Arrecada tudo", brl(c.preco * c.cotas)]];
+  cx.innerHTML =
+    '<h3 style="margin-bottom:10px">' + (c.titulo || "Sem título") + "</h3>" +
+    linhas.map(l => '<div style="display:flex;gap:12px;font-size:13.5px;padding:6px 0;border-top:1px solid rgba(6,60,38,.07)"><span style="color:var(--musgo)">' + l[0] + '</span><span class="num" style="margin-left:auto;text-align:right;font-weight:500">' + l[1] + "</span></div>").join("");
+}
+
+/* ============ conversa com o servidor ============ */
+async function servidor(caminho, opcoes) {
+  const r = await fetch(caminho, {
+    headers: { "Content-Type": "application/json" },
+    ...opcoes,
+  });
+  let corpo = null;
+  try { corpo = await r.json(); } catch (e) { corpo = null; }
+  if (!r.ok) throw new Error((corpo && corpo.erro) || "O servidor não respondeu direito.");
+  return corpo;
+}
+
+async function buscarCampanha(id) {
+  const d = await servidor("/api/campanhas/" + id);
+  campanhaId = id;
+  tipo = d.campanha.tipo;
+  const c = est[tipo];
+  Object.assign(c, {
+    titulo: d.campanha.titulo, descricao: d.campanha.descricao, fotos: d.campanha.fotos || [],
+    meta: d.campanha.meta, valores: d.campanha.valores && d.campanha.valores.length ? d.campanha.valores : c.valores,
+    livre: d.campanha.livre, anonimo: d.campanha.anonimoPermitido,
+    premio: d.campanha.premio, preco: d.campanha.preco, cotas: d.campanha.cotas,
+    promos: d.campanha.promos || [], sorteio: d.campanha.sorteio, restantes: d.campanha.mostrarRestantes,
+  });
+  est.organizador = d.campanha.organizador;
+  est.pix = d.campanha.pix;
+  resumo = d.resumo;
+  publicado = true;
+  return d;
+}
+
+async function atualizarResumo() {
+  if (!campanhaId) return;
+  try {
+    const d = await servidor("/api/campanhas/" + campanhaId);
+    resumo = d.resumo;
+  } catch (e) { /* mantém os números que já estão na tela */ }
+}
+
+/* ============ página pública ============ */
+function fatiaPct() {
+  const c = atual();
+  return tipo === "doacao"
+    ? (c.meta > 0 ? Math.min(100, (resumo.arrecadado / c.meta) * 100) : 0)
+    : (c.cotas > 0 ? Math.min(100, (resumo.cotasVendidas / c.cotas) * 100) : 0);
+}
+
+// todo texto daqui sai de número real: nada de "quase batendo a meta" quando não está
+function recadoDaCampanha() {
+  const c = atual(), r = resumo, pct = fatiaPct();
+  if (tipo === "rifa") {
+    if (!publicado) return "Esta é a prévia da sua rifa. Publique para as cotas ficarem à venda.";
+    if (r.cotasVendidas === 0) return "As cotas <b>acabaram de entrar à venda</b>. Quem chega primeiro escolhe entre todos os números.";
+    if (c.cotas > 0 && r.cotasRestantes / c.cotas <= 0.1) return "Últimas <b>" + r.cotasRestantes + (r.cotasRestantes === 1 ? " cota" : " cotas") + "</b> de " + c.cotas + ". Depois disso o sorteio fecha.";
+    if (pct >= 50) return "Mais da metade já saiu: <b>" + r.cotasVendidas + "</b> de " + c.cotas + " cotas. Restam " + r.cotasRestantes + ".";
+    return "<b>" + r.cotasVendidas + (r.cotasVendidas === 1 ? " cota vendida" : " cotas vendidas") + "</b> até agora. Ainda dá para escolher entre " + r.cotasRestantes + " números.";
+  }
+  if (!publicado) return "Esta é a prévia da sua vaquinha. Publique para começar a receber.";
+  const falta = Math.max(0, c.meta - r.arrecadado);
+  if (r.apoiadores === 0) return "Ninguém apoiou ainda. O <b>primeiro apoio</b> é o que tira a página do zero — e é o que faz os outros virem atrás.";
+  if (falta <= 0) return "Meta batida: <b>" + brl(r.arrecadado) + "</b> arrecadados. O que entrar agora é o que passa do combinado.";
+  if (pct >= 90) return "Reta final: faltam <b>" + brl(falta) + "</b> para fechar a meta.";
+  if (pct >= 50) return "Já passou da metade — <b>" + Math.round(pct) + "%</b> da meta. Faltam " + brl(falta) + ".";
+  const comum = r.valorTipico > 0 ? " A doação mais comum aqui é de <b>" + brlCurto(r.valorTipico) + "</b>, e é ela que enche a barra." : "";
+  return "<b>" + r.apoiadores + (r.apoiadores === 1 ? " pessoa já apoiou" : " pessoas já apoiaram") + "</b>." + comum;
+}
+
+function pulsoDaCampanha() {
+  const r = resumo;
+  if (!publicado) return "";
+  if (r.ultimas24h > 0) return r.ultimas24h + (r.ultimas24h === 1 ? " apoio nas últimas 24 horas" : " apoios nas últimas 24 horas");
+  if (r.apoiadores > 0) return r.apoiadores + (r.apoiadores === 1 ? " pessoa apoiou" : " pessoas apoiaram") + " esta campanha";
+  return "";
+}
+
+function desenharPublica(animar) {
+  const c = atual(), ehRifa = tipo === "rifa", r = resumo;
+
+  const car = $("#pub-carrossel"), pontos = $("#pub-pontos");
+  car.innerHTML = ""; pontos.innerHTML = "";
+  if (!c.fotos.length) {
+    car.innerHTML = '<div class="carrossel__slide"><div class="capa__vazia"><svg width="26" height="26"><use href="#i-camera"/></svg>Sem foto ainda — volte ao passo 1 e escolha uma capa.</div></div>';
+  } else {
+    c.fotos.forEach((src, i) => {
+      car.insertAdjacentHTML("beforeend", '<div class="carrossel__slide"><img src="' + src + '" alt="Foto ' + (i + 1) + '"></div>');
+      pontos.insertAdjacentHTML("beforeend", '<span class="ponto' + (i ? "" : " ativo") + '"></span>');
+    });
+  }
+  if (c.fotos.length < 2) pontos.innerHTML = "";
+
+  $("#pub-etiqueta").className = "etiqueta" + (ehRifa ? " etiqueta--rifa" : "");
+  $("#pub-etiqueta").textContent = ehRifa
+    ? "Growdy Rifas · sorteio " + (c.sorteio ? new Date(c.sorteio + "T00:00").toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }) : "a combinar")
+    : "Growdy Vaquinha";
+  $("#pub-titulo").textContent = c.titulo || "Sem título";
+  $("#pub-organizador").textContent = est.organizador || "Organizador";
+  $("#pub-inicial").textContent = (est.organizador || "?").trim().charAt(0).toUpperCase();
+  $("#pub-sub").textContent = ehRifa ? c.premio : "recebe o repasse via Pix";
+  $("#pub-descricao").textContent = c.descricao || "Sem descrição.";
+  $("#pub-painel").className = "painel" + (ehRifa ? " painel--rifa" : "");
+
+  const pct = fatiaPct();
+  const fita = $("#pub-fita");
+  if (animar) { fita.style.width = "0%"; requestAnimationFrame(() => { fita.style.width = pct + "%"; }); }
+  else fita.style.width = pct + "%";
+
+  const valorEl = $("#pub-valor");
+  if (ehRifa) {
+    if (c.restantes) {
+      animarNumero(valorEl, animar ? 0 : r.cotasRestantes, r.cotasRestantes, n => Math.round(n) + " cotas", 800);
+      $("#pub-apoio").textContent = "ainda livres de " + c.cotas;
+    } else {
+      animarNumero(valorEl, animar ? 0 : r.cotasVendidas, r.cotasVendidas, n => Math.round(n) + " cotas", 800);
+      $("#pub-apoio").textContent = "já vendidas";
+    }
+    $("#pub-leg-a").textContent = Math.round(pct) + "% vendido";
+    $("#pub-leg-b").innerHTML = "<b>" + brlCurto(r.arrecadado) + "</b> arrecadados";
+    $("#pub-tijolos").innerHTML = tijolo(brl(c.preco), "por cota") + tijolo(r.cotasVendidas, "cotas vendidas") +
+      tijolo(c.sorteio ? new Date(c.sorteio + "T00:00").toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }) : "a definir", "sorteio");
+  } else {
+    animarNumero(valorEl, animar ? 0 : r.arrecadado, r.arrecadado, n => brlCurto(n), 900);
+    $("#pub-apoio").textContent = "de uma meta de " + brlCurto(c.meta);
+    $("#pub-leg-a").textContent = Math.round(pct) + "% da meta";
+    $("#pub-leg-b").innerHTML = "<b>" + r.apoiadores + "</b> " + (r.apoiadores === 1 ? "apoiador" : "apoiadores");
+    const falta = Math.max(0, c.meta - r.arrecadado);
+    $("#pub-tijolos").innerHTML = tijolo(brlCurto(c.meta), "meta") + tijolo(r.apoiadores, "apoiadores") + tijolo(brlCurto(falta), "faltam");
+  }
+
+  const pulso = pulsoDaCampanha();
+  $("#pub-pulso").hidden = !pulso;
+  $("#pub-pulso-txt").textContent = pulso;
+  const recado = $("#pub-recado");
+  recado.className = "recado" + (ehRifa ? " recado--rifa" : "");
+  recado.innerHTML = recadoDaCampanha();
+
+  const secaoV = $("#secao-vitrine");
+  const promosOk = c.promos ? c.promos.filter(p => p.qtd > 0 && p.preco > 0) : [];
+  secaoV.hidden = !(ehRifa && promosOk.length);
+  if (!secaoV.hidden) {
+    $("#pub-vitrine").innerHTML = promosOk.map(p => {
+      const pc = Math.round((1 - p.preco / (p.qtd * c.preco)) * 100);
+      return '<div class="vitrine-item"><div class="vitrine-item__qtd">' + p.qtd + " cotas</div><div class=\"vitrine-item__preco\">" + brl(p.preco) + '</div><div class="vitrine-item__eco">' + (pc > 0 ? "economize " + pc + "%" : "preço cheio") + "</div></div>";
+    }).join("");
+  }
+
+  desenharApoiadores(ehRifa);
+
+  const btn = $("#btn-apoiar");
+  const semCota = ehRifa && publicado && r.cotasRestantes <= 0;
+  btn.textContent = semCota ? "Cotas esgotadas" : (ehRifa ? "Escolher cotas" : "Doar agora");
+  btn.className = "btn btn__brilho " + (ehRifa ? "btn--ambar" : "btn--principal") + (semCota ? " btn--bloqueado" : "");
+  $(".selo-exemplo").textContent = publicado ? "no ar" : "prévia";
+  $("#pub-rodape").textContent = publicado
+    ? "Pix processado pela Bass Pago. O repasse vai para a chave de " + (est.organizador || "quem organiza") + "."
+    : "Prévia: os números só começam a andar depois de publicar.";
+}
+
+// lista contida: os maiores apoios em caixa com rolagem própria, o resto vira contagem
+function desenharApoiadores(ehRifa) {
+  const r = resumo, cx = $("#pub-apoiadores"), resto = $("#pub-resto");
+  $("#titulo-apoiadores").textContent = ehRifa ? "Cotas já vendidas" : "Quem já apoiou";
+
+  const linha = (a, i, medalha) =>
+    '<div class="apoiador' + (a.novo ? " apoiador--novo" : "") + '">' +
+    (medalha ? '<span class="medalha">' + (i + 1) + "</span>" : "") +
+    '<span class="avatar" style="' + (ehRifa ? "background:linear-gradient(145deg,#F0B45F,#E2891B)" : "") + '">' + (a.nome || "?").charAt(0).toUpperCase() + "</span>" +
+    '<span><span class="apoiador__nome">' + a.nome + "</span>" +
+    (a.msg ? '<span class="apoiador__msg">' + a.msg + "</span>" : "") + "</span>" +
+    '<span class="apoiador__valor" style="' + (ehRifa ? "color:var(--ambar-esc)" : "") + '">' +
+    (ehRifa ? a.cotas + (a.cotas === 1 ? " cota" : " cotas") : brl(a.valor)) + "</span></div>";
+
+  if (!r.destaques.length) {
+    cx.innerHTML = '<p class="legenda" style="margin:0;padding:12px 0">' +
+      (publicado ? "Ninguém apoiou ainda. Compartilhe o link e a lista começa aqui." : "Depois de publicar, quem apoiar aparece nesta lista.") + "</p>";
+    resto.hidden = true;
+    return;
+  }
+
+  const chaves = new Set(r.destaques.map(a => a.pagaEm));
+  const novos = r.recentes.filter(a => !chaves.has(a.pagaEm));
+  cx.innerHTML =
+    r.destaques.map((a, i) => linha(a, i, true)).join("") +
+    (novos.length ? '<div class="secao__titulo" style="margin:14px 0 4px;font-size:12px;color:var(--musgo)">chegaram agora</div>' + novos.map(a => linha(a, 0, false)).join("") : "");
+
+  const sobrando = r.apoiadores - r.destaques.length - novos.length;
+  resto.hidden = sobrando <= 0;
+  if (sobrando > 0) {
+    resto.innerHTML = "<span>+ " + sobrando + (sobrando === 1 ? " outra pessoa apoiou" : " outras pessoas apoiaram") + "</span><span>ver lista</span>";
+    resto.onclick = () => {
+      const caixa = $("#caixa-apoiadores");
+      caixa.classList.toggle("aberta");
+      $("span:last-child", resto).textContent = caixa.classList.contains("aberta") ? "recolher" : "ver lista";
+    };
+  }
+}
+
+function tijolo(n, rot) {
+  return '<div class="tijolo"><div class="tijolo__num">' + n + '</div><div class="tijolo__rot">' + rot + "</div></div>";
+}
+
+$("#pub-carrossel").addEventListener("scroll", () => {
+  const car = $("#pub-carrossel");
+  const i = Math.round(car.scrollLeft / Math.max(1, car.clientWidth));
+  $$(".ponto").forEach((p, k) => p.classList.toggle("ativo", k === i));
+}, { passive: true });
+
+/* ============ folhas ============ */
+const cortina = $("#cortina");
+let folhaAberta = null;
+function abrirFolha(el) {
+  folhaAberta = el;
+  cortina.classList.add("aberta");
+  el.classList.add("aberta");
+  el.setAttribute("aria-hidden", "false");
+}
+function fecharFolha() {
+  if (!folhaAberta) return;
+  folhaAberta.classList.remove("aberta");
+  folhaAberta.setAttribute("aria-hidden", "true");
+  folhaAberta = null;
+  cortina.classList.remove("aberta");
+  pararEspera();
+}
+cortina.addEventListener("click", fecharFolha);
+$$("[data-fechar]").forEach(b => b.addEventListener("click", fecharFolha));
+document.addEventListener("keydown", e => { if (e.key === "Escape") fecharFolha(); });
+
+$$("[data-alca]").forEach(alca => {
+  const folha = alca.closest(".folha");
+  let y0 = null, dy = 0;
+  alca.addEventListener("pointerdown", e => {
+    y0 = e.clientY; dy = 0;
+    folha.classList.add("arrastando");
+    try { alca.setPointerCapture(e.pointerId); } catch (err) { }
+  });
+  alca.addEventListener("pointermove", e => {
+    if (y0 === null) return;
+    dy = Math.max(0, e.clientY - y0);
+    folha.style.transform = "translate(-50%," + dy + "px)";
+  });
+  const soltar = () => {
+    if (y0 === null) return;
+    folha.classList.remove("arrastando");
+    folha.style.transform = "";
+    if (dy > 90) fecharFolha();
+    y0 = null;
+  };
+  alca.addEventListener("pointerup", soltar);
+  alca.addEventListener("pointercancel", soltar);
+});
+
+/* ============ checkout da doação ============ */
+let valorDoacao = 50;
+function desenharChipsDoacao() {
+  const c = est.doacao, cx = $("#doacao-chips");
+  cx.innerHTML = "";
+  c.valores.filter(v => v > 0).forEach(v => {
+    const b = document.createElement("button");
+    b.className = "chip" + (Math.abs(v - valorDoacao) < 0.005 ? " ativo" : "");
+    b.textContent = brlCurto(v);
+    b.addEventListener("click", () => { valorDoacao = v; escreverValorDoacao(true); });
+    cx.appendChild(b);
+  });
+  if (c.livre) {
+    const b = document.createElement("button");
+    b.className = "chip";
+    b.textContent = "outro valor";
+    b.addEventListener("click", () => { const el = $("#doacao-valor"); el.focus(); el.setSelectionRange(el.value.length, el.value.length); });
+    cx.appendChild(b);
+  }
+}
+function escreverValorDoacao(pulsar) {
+  const el = $("#doacao-valor");
+  el.value = "R$ " + porReais(valorDoacao);
+  $("#btn-confirmar-doacao").textContent = "Doar " + brl(valorDoacao) + " no Pix";
+  desenharChipsDoacao();
+  if (pulsar && !menosMovimento) { el.classList.remove("pulso"); void el.offsetWidth; el.classList.add("pulso"); }
+}
+$("#doacao-valor").addEventListener("input", e => {
+  const cent = parseInt(soDigitos(e.target.value) || "0", 10);
+  valorDoacao = Math.min(999999, cent / 100);
+  e.target.value = "R$ " + porReais(valorDoacao);
+  $("#btn-confirmar-doacao").textContent = "Doar " + brl(valorDoacao) + " no Pix";
+  desenharChipsDoacao();
+});
+ligarInterruptor("#doacao-anonimo", v => {
+  const campo = $("#doacao-nome");
+  campo.disabled = v;
+  campo.style.opacity = v ? ".5" : "1";
+});
+
+function abrirDoacao() {
+  const c = est.doacao;
+  const sugeridos = c.valores.filter(v => v > 0);
+  valorDoacao = sugeridos[1] || sugeridos[0] || 50;
+  const campo = $("#doacao-valor");
+  campo.readOnly = !c.livre;
+  campo.style.color = c.livre ? "" : "var(--musgo)";
+  escreverValorDoacao(false);
+  abrirFolha($("#folha-doacao"));
+}
+
+$("#btn-confirmar-doacao").addEventListener("click", () => {
+  if (!(valorDoacao >= 1)) { aviso("Escolha um valor a partir de R$ 1,00."); return; }
+  const anon = $("#doacao-anonimo").classList.contains("ligado");
+  cobrar({
+    valor: valorDoacao,
+    nome: anon ? "" : $("#doacao-nome").value.trim(),
+    msg: $("#doacao-msg").value.trim(),
+    anonimo: anon,
+  }, $("#btn-confirmar-doacao"));
+});
+
+/* ============ checkout da rifa ============ */
+let qtdCotas = 1;
+function calcularRifa(qtd) {
+  const c = est.rifa;
+  const promos = c.promos.filter(p => p.qtd > 0 && p.preco > 0).sort((a, b) => b.qtd - a.qtd);
+  let resto = qtd, total = 0;
+  promos.forEach(p => {
+    const n = Math.floor(resto / p.qtd);
+    if (n > 0) { total += n * p.preco; resto -= n * p.qtd; }
+  });
+  total += resto * c.preco;
+  const cheio = qtd * c.preco;
+  return { total: total, cheio: cheio, economia: Math.max(0, cheio - total) };
+}
+function desenharPacotes() {
+  const c = est.rifa, cx = $("#lista-pacotes");
+  const promos = c.promos.filter(p => p.qtd > 0 && p.preco > 0).sort((a, b) => a.qtd - b.qtd);
+  cx.innerHTML = "";
+  if (!promos.length) { cx.innerHTML = '<p class="legenda" style="margin:0">Cotas avulsas a ' + brl(c.preco) + " cada. Sem promoção por quantidade nesta rifa.</p>"; return; }
+  promos.forEach(p => {
+    const pc = Math.round((1 - p.preco / (p.qtd * c.preco)) * 100);
+    const b = document.createElement("button");
+    b.className = "pacote" + (qtdCotas === p.qtd ? " ativo" : "");
+    b.innerHTML =
+      '<span><span class="pacote__qtd">' + p.qtd + ' cotas</span><span class="pacote__un">sai a ' + brl(p.preco / p.qtd) + " cada</span></span>" +
+      '<span class="pacote__preco"><span class="pacote__valor">' + brl(p.preco) + "</span>" + (pc > 0 ? '<br><span class="pacote__eco">economize ' + pc + "%</span>" : "") + "</span>";
+    b.addEventListener("click", () => { qtdCotas = p.qtd; atualizarRifa(); });
+    cx.appendChild(b);
+  });
+}
+function atualizarRifa() {
+  const c = est.rifa;
+  const livres = Math.max(1, resumo.cotasRestantes || c.cotas);
+  qtdCotas = Math.max(1, Math.min(qtdCotas, livres));
+  const r = calcularRifa(qtdCotas);
+  const num = $("#cota-num");
+  num.textContent = qtdCotas;
+  if (!menosMovimento) { num.classList.remove("pulso"); void num.offsetWidth; num.classList.add("pulso"); }
+  $("#cota-unitario").textContent = brl(c.preco) + " a cota avulsa · " + livres + " livres";
+  $("#resumo-rot").textContent = qtdCotas + (qtdCotas === 1 ? " cota" : " cotas") + (r.economia > 0 ? " · economia de " + brl(r.economia) : "");
+  $("#resumo-total").textContent = brl(r.total);
+  $("#btn-confirmar-rifa").textContent = "Pagar " + brl(r.total) + " no Pix";
+  const promos = c.promos.filter(p => p.qtd > 0 && p.preco > 0).sort((a, b) => a.qtd - b.qtd);
+  $$(".pacote").forEach((b, i) => b.classList.toggle("ativo", promos[i] && promos[i].qtd === qtdCotas));
+}
+$("#cota-menos").addEventListener("click", () => { qtdCotas--; atualizarRifa(); });
+$("#cota-mais").addEventListener("click", () => { qtdCotas++; atualizarRifa(); });
+function abrirRifa() {
+  qtdCotas = 1;
+  desenharPacotes();
+  atualizarRifa();
+  abrirFolha($("#folha-rifa"));
+}
+$("#btn-confirmar-rifa").addEventListener("click", () => {
+  cobrar({
+    cotas: qtdCotas,
+    nome: $("#rifa-nome").value.trim(),
+    contato: $("#rifa-tel").value.trim(),
+  }, $("#btn-confirmar-rifa"));
+});
+
+/* ============ pagamento pix de verdade ============ */
+let espera = null, relogio = null, txidAtual = null;
+let ultimoApoio = { nome: "", anonimo: false };
+function pararEspera() {
+  clearInterval(espera); clearInterval(relogio);
+  espera = relogio = null;
+}
+
+async function cobrar(dados, botao) {
+  if (!campanhaId) { aviso("Publique a campanha antes de receber apoios."); return; }
+  ultimoApoio = { nome: dados.nome || "", anonimo: !!dados.anonimo };
+  const textoAntes = botao.textContent;
+  botao.textContent = "Gerando o Pix…";
+  botao.classList.add("btn--bloqueado");
+  try {
+    const cob = await servidor("/api/contribuicoes", {
+      method: "POST",
+      body: JSON.stringify({ campanhaId: campanhaId, ...dados }),
+    });
+    fecharFolha();
+    setTimeout(() => mostrarPix(cob), 260);
+  } catch (e) {
+    aviso(e.message);
+  } finally {
+    botao.textContent = textoAntes;
+    botao.classList.remove("btn--bloqueado");
+  }
+}
+
+function mostrarPix(cob) {
+  txidAtual = cob.txid;
+  const folha = $("#folha-pix");
+  folha.classList.toggle("folha--rifa", tipo === "rifa");
+  $("#pix-valor").textContent = brl(cob.valor);
+  $("#pix-codigo").textContent = cob.pixCopiaECola || "—";
+
+  const alvo = $("#pix-qr");
+  alvo.innerHTML = "";
+  if (cob.pixCopiaECola && window.QRCode) {
+    new window.QRCode(alvo, { text: cob.pixCopiaECola, width: 192, height: 192, correctLevel: window.QRCode.CorrectLevel.M });
+  } else {
+    alvo.innerHTML = '<p class="legenda" style="margin:0;text-align:center;padding:10px">Use o botão abaixo para copiar o código e colar no app do banco.</p>';
+  }
+
+  let restam = cob.expiracao || 1800;
+  const marcar = () => {
+    const m = String(Math.floor(restam / 60)).padStart(2, "0");
+    const s = String(restam % 60).padStart(2, "0");
+    $("#pix-prazo").textContent = m + ":" + s;
+  };
+  marcar();
+  pararEspera();
+  relogio = setInterval(() => {
+    restam--;
+    if (restam <= 0) { pararEspera(); $("#pix-espera").innerHTML = "<span>O código expirou. Feche e gere outro.</span>"; return; }
+    marcar();
+  }, 1000);
+  espera = setInterval(conferirPagamento, 3000);
+
+  abrirFolha(folha);
+}
+
+$("#pix-copiar").addEventListener("click", () => {
+  const txt = $("#pix-codigo").textContent;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(txt).then(() => aviso("Código Pix copiado")).catch(() => aviso("Selecione o código e copie na mão."));
+  } else aviso("Selecione o código e copie na mão.");
+});
+$("#pix-cancelar").addEventListener("click", fecharFolha);
+
+async function conferirPagamento() {
+  if (!txidAtual) return;
+  let d;
+  try { d = await servidor("/api/contribuicoes/" + txidAtual); }
+  catch (e) { return; }
+  // guarda onde a barra estava para a tela mostrar o empurrão que este apoio deu
+  const antes = { arrecadado: resumo.arrecadado, vendidas: resumo.cotasVendidas };
+  if (d.resumo) resumo = d.resumo;
+  if (d.status !== "PAGO") return;
+  pararEspera();
+  const pago = { valor: d.valor, cotas: d.cotas, numeros: d.numeros || [] };
+  txidAtual = null;
+  fecharFolha();
+  setTimeout(() => {
+    desenharPublica(false);
+    confete(tipo === "rifa" ? ["#E2891B", "#F7C46C", "#B9772A", "#FFE9C6", "#00A15C"] : null);
+    const c = atual();
+    const nome = ultimoApoio.anonimo ? "" : (ultimoApoio.nome || "").trim().split(" ")[0];
+
+    if (tipo === "rifa") {
+      mostrarSucesso({
+        rifa: true,
+        titulo: nome ? "São suas, " + nome + "!" : (pago.cotas === 1 ? "A cota é sua" : "As cotas são suas"),
+        valorTexto: pago.cotas + (pago.cotas === 1 ? " cota" : " cotas"),
+        valorNumero: pago.cotas,
+        rotulo: "reservadas no seu nome",
+        frase: "Pix de <b>" + brl(pago.valor) + "</b> confirmado. Guarde os números abaixo — no dia do sorteio são eles que valem por você.",
+        impacto: { antes: antes.vendidas, depois: resumo.cotasVendidas, total: c.cotas, entrou: pago.cotas },
+        numeros: pago.numeros,
+        botao: "Voltar para a rifa",
+      });
+    } else {
+      const falta = Math.max(0, c.meta - resumo.arrecadado);
+      mostrarSucesso({
+        titulo: nome ? "Obrigado, " + nome + "!" : "Obrigado de verdade!",
+        valorTexto: brl(pago.valor),
+        valorNumero: pago.valor,
+        rotulo: "sua doação entrou agora",
+        frase: falta > 0
+          ? "A barra subiu por sua causa. Faltam <b>" + brl(falta) + "</b> para a meta — e mandar o link para uma pessoa ajuda mais do que parece."
+          : "Com a sua doação a meta foi batida: <b>" + brl(resumo.arrecadado) + "</b> no total. O que entrar daqui pra frente é o que passa do combinado.",
+        impacto: { antes: antes.arrecadado, depois: resumo.arrecadado, total: c.meta, entrou: pago.valor },
+        botao: "Voltar para a página",
+      });
+    }
+  }, 300);
+}
+
+/* ============ sucesso ============ */
+function linkAtual() {
+  return location.host + (campanhaId ? "/?c=" + campanhaId : "/");
+}
+function blocoLink() {
+  return '<div class="link-copiar"><span class="link-copiar__url">' + linkAtual() + '</span><button class="link-copiar__btn" data-copiar>Copiar</button></div>';
+}
+const SVG_CHECK = '<svg width="42" height="42" viewBox="0 0 24 24" aria-hidden="true"><path class="risco" d="M5 12.4l4.7 4.6L19 7.4" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const SVG_BILHETE = '<svg width="42" height="42" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9.2A1.7 1.7 0 0 1 4.7 7.5h14.6A1.7 1.7 0 0 1 21 9.2v1.9a2 2 0 0 0 0 3.8v1.9a1.7 1.7 0 0 1-1.7 1.7H4.7A1.7 1.7 0 0 1 3 16.8v-1.9a2 2 0 0 0 0-3.8z" fill="none" stroke="#fff" stroke-width="1.9" stroke-linejoin="round"/><path class="risco" d="M12 8.6v1.7M12 11.9v1.7M12 15.2v1.7" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>';
+const SVG_ZAP = '<svg width="17" height="17" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11.8a8 8 0 0 1-11.9 7L4 20l1.3-3.9A8 8 0 1 1 20 11.8z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/><path d="M9.2 9.4c.3 2.2 2.6 4.4 4.8 4.8l1-1.3 2 1-.5 1.6c-2.9.6-7.3-3-7.9-6.1l1.5-.6z" fill="currentColor"/></svg>';
+const SVG_LINK = '<svg width="17" height="17" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-copiar"/></svg>';
+
+function serpentinas(rifa) {
+  const cores = rifa ? ["#E2891B", "#F7C46C", "#00A15C", "#FFD9A0", "#B9772A"] : ["#00A15C", "#34D98A", "#BFEAD3", "#F2A33C", "#06623B"];
+  let s = "";
+  for (let i = 0; i < 9; i++) {
+    const x = 4 + i * 11 + Math.random() * 5;
+    s += '<span class="serpentina" style="left:' + x.toFixed(1) + "%;background:" + cores[i % cores.length] +
+      ";animation-delay:" + (i * 95) + "ms;height:" + (16 + Math.random() * 14).toFixed(0) + 'px"></span>';
+  }
+  return s;
+}
+function faiscas() {
+  let s = "";
+  for (let i = 0; i < 11; i++) {
+    const ang = (i / 11) * Math.PI * 2 + Math.random() * 0.3;
+    const d = 54 + Math.random() * 28;
+    s += '<span class="faisca" style="--fx:' + (Math.cos(ang) * d).toFixed(0) + "px;--fy:" + (Math.sin(ang) * d).toFixed(0) +
+      "px;animation-delay:" + (330 + i * 28) + 'ms"></span>';
+  }
+  return s;
+}
+function palavrasAnimadas(texto, atraso) {
+  return texto.split(" ").map((p, i) => '<span style="animation-delay:' + (atraso + i * 75) + 'ms">' + p + "</span>").join(" ");
+}
+
+function blocoImpacto(imp, rifa) {
+  if (!imp || !(imp.total > 0)) return "";
+  const pctAntes = Math.min(100, (imp.antes / imp.total) * 100);
+  const pctDepois = Math.min(100, (imp.depois / imp.total) * 100);
+  const fmt = rifa ? (n => Math.round(n) + " cotas") : (n => brlCurto(n));
+  return '<div class="impacto">' +
+    '<div class="impacto__topo"><span>' + (rifa ? "cotas vendidas" : "arrecadado") + '</span>' +
+    '<span class="impacto__selo">+ ' + (rifa ? imp.entrou + (imp.entrou === 1 ? " cota" : " cotas") : brl(imp.entrou)) + "</span></div>" +
+    '<div class="impacto__barra"><div class="impacto__antes" style="width:' + pctAntes.toFixed(1) + '%"></div>' +
+    '<div class="impacto__agora" data-ate="' + pctDepois.toFixed(1) + '" style="width:' + pctAntes.toFixed(1) + '%"></div></div>' +
+    '<div class="impacto__pe"><span>antes ' + fmt(imp.antes) + "</span><span><b>agora " + fmt(imp.depois) + "</b></span></div></div>";
+}
+
+function blocoCompartilhar() {
+  return '<div class="compartilhar">' +
+    "<button data-zap>" + SVG_ZAP + " WhatsApp</button>" +
+    "<button data-copiar>" + SVG_LINK + " Copiar link</button></div>";
+}
+
+function textoDeCompartilhar() {
+  const c = atual();
+  const alvo = tipo === "rifa" ? "Tô na rifa: " : "Apoiei esta vaquinha: ";
+  return alvo + (c.titulo || "") + " — " + location.origin + (campanhaId ? "/?c=" + campanhaId : "/");
+}
+
+function mostrarSucesso(cfg) {
+  const rifa = !!cfg.rifa;
+  const corpo = $("#sucesso-corpo");
+  corpo.innerHTML =
+    '<div class="festa ' + (rifa ? "festa--rifa" : "") + '">' +
+      serpentinas(rifa) +
+      '<div class="selo-palco">' +
+        '<span class="anel"></span><span class="anel"></span><span class="anel"></span>' +
+        faiscas() +
+        '<div class="selo-disco">' + (rifa ? SVG_BILHETE : SVG_CHECK) + "</div>" +
+      "</div>" +
+      '<h2 class="festa__titulo">' + palavrasAnimadas(cfg.titulo, 360) + "</h2>" +
+      (cfg.valorTexto ? '<div class="festa__valor" data-conta="' + (cfg.valorNumero || 0) + '">' + cfg.valorTexto + "</div>" : "") +
+      (cfg.rotulo ? '<div class="festa__rotulo">' + cfg.rotulo + "</div>" : "") +
+      '<p class="festa__frase">' + cfg.frase + "</p>" +
+      blocoImpacto(cfg.impacto, rifa) +
+      (cfg.numeros && cfg.numeros.length
+        ? '<div class="bilhetes-titulo">' + (cfg.numeros.length === 1 ? "seu número" : "seus números") + "</div>" +
+          '<div class="bilhetes">' + cfg.numeros.map((n, i) => '<span class="bilhete" style="animation-delay:' + (900 + i * 70) + 'ms">' + n + "</span>").join("") + "</div>"
+        : "") +
+      (cfg.mostrarLink ? blocoLink() : "") +
+      blocoCompartilhar() +
+      '<div style="height:12px"></div>' +
+    "</div>";
+
+  const botaoFecha = $("#btn-fechar-sucesso");
+  botaoFecha.textContent = cfg.botao || "Fechar";
+  botaoFecha.className = "btn " + (rifa ? "btn--ambar" : "btn--principal");
+
+  // um tremidinho no celular, junto com o confete
+  try { if (navigator.vibrate) navigator.vibrate([14, 70, 26]); } catch (e) { /* aparelho sem motor */ }
+
+  // a barra só corre depois que a folha assentou
+  const agora = $(".impacto__agora", corpo);
+  if (agora) requestAnimationFrame(() => { agora.style.width = agora.dataset.ate + "%"; });
+
+  // o valor sobe contando, para o número ser visto e não só lido
+  const valorEl = $(".festa__valor", corpo);
+  if (valorEl && Number(valorEl.dataset.conta) > 0) {
+    const ate = Number(valorEl.dataset.conta);
+    const formata = rifa ? (n => Math.round(n) + (Math.round(n) === 1 ? " cota" : " cotas")) : (n => brl(n));
+    valorEl.textContent = formata(0);
+    setTimeout(() => animarNumero(valorEl, 0, ate, formata, 1100), 420);
+  }
+
+  const zap = $("[data-zap]", corpo);
+  if (zap) zap.addEventListener("click", () => {
+    window.open("https://wa.me/?text=" + encodeURIComponent(textoDeCompartilhar()), "_blank", "noopener");
+  });
+  $$("[data-copiar]", corpo).forEach(b => b.addEventListener("click", () => {
+    const txt = location.origin + (campanhaId ? "/?c=" + campanhaId : "/");
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(txt).then(() => aviso("Link copiado")).catch(() => aviso("Copie na mão: " + linkAtual()));
+    } else aviso("Copie na mão: " + linkAtual());
+  }));
+
+  abrirFolha($("#folha-sucesso"));
+}
+$("#btn-fechar-sucesso").addEventListener("click", fecharFolha);
+
+/* ============ confete ============ */
+// Três jorros: um repuxo no meio e dois canhões das quinas, com fitas que
+// giram e bambeiam na queda. Quem não quer movimento não vê nada disso.
+function confete(cores) {
+  if (menosMovimento) return;
+  const cv = $("#confete");
+  const L = window.innerWidth, A = window.innerHeight;
+  const dpr = Math.min(2, window.devicePixelRatio || 1);
+  cv.hidden = false;
+  cv.width = L * dpr; cv.height = A * dpr;
+  cv.style.width = L + "px"; cv.style.height = A + "px";
+  const ctx = cv.getContext("2d");
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+  const cs = cores || ["#00A15C", "#34D98A", "#06623B", "#BFEAD3", "#F2A33C"];
+  const pecas = [];
+  const jorro = (x, y, quantos, forca, angulo, abertura, nasce) => {
+    for (let i = 0; i < quantos; i++) {
+      const a = angulo + (Math.random() - 0.5) * abertura;
+      const v = forca * (0.55 + Math.random() * 0.7);
+      pecas.push({
+        x: x, y: y,
+        vx: Math.cos(a) * v, vy: Math.sin(a) * v,
+        g: 0.24 + Math.random() * 0.13,
+        arrasto: 0.987 + Math.random() * 0.008,
+        giro: Math.random() * 6.28, vgiro: (Math.random() - 0.5) * 0.4,
+        lado: 4.5 + Math.random() * 6.5,
+        redondo: Math.random() < 0.26,
+        freq: 0.05 + Math.random() * 0.09, fase: Math.random() * 6.28, balanco: 0.4 + Math.random() * 1.2,
+        cor: cs[(Math.random() * cs.length) | 0],
+        nasce: nasce,
+      });
+    }
+  };
+
+  // repuxo central, e os dois canhões vindo de baixo nas quinas
+  jorro(L / 2, A * 0.62, 46, 12, -Math.PI / 2, 1.5, 0);
+  jorro(-10, A * 0.95, 30, 15, -Math.PI / 3.1, 0.75, 170);
+  jorro(L + 10, A * 0.95, 30, 15, -Math.PI + Math.PI / 3.1, 0.75, 300);
+
+  const inicio = performance.now();
+  const duracao = 2700;
+  (function quadro(t) {
+    const passou = t - inicio;
+    ctx.clearRect(0, 0, L, A);
+    const sumindo = Math.max(0, (passou - (duracao - 650)) / 650);
+    ctx.globalAlpha = Math.max(0, 1 - sumindo);
+
+    for (const p of pecas) {
+      if (passou < p.nasce) continue;
+      p.vy += p.g;
+      p.vx *= p.arrasto;
+      p.vy *= p.arrasto;
+      p.x += p.vx + Math.sin(passou * 0.001 * 60 * p.freq + p.fase) * p.balanco;
+      p.y += p.vy;
+      p.giro += p.vgiro;
+      if (p.y > A + 40) continue;
+
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.giro);
+      ctx.fillStyle = p.cor;
+      if (p.redondo) {
+        ctx.beginPath();
+        ctx.arc(0, 0, p.lado * 0.45, 0, 6.2832);
+        ctx.fill();
+      } else {
+        // a fita "afina" conforme gira, como papel de verdade
+        const largura = p.lado * Math.abs(Math.cos(p.giro * 0.7)) * 0.75 + p.lado * 0.25;
+        ctx.fillRect(-largura / 2, -p.lado * 1.1, largura, p.lado * 2.2);
+      }
+      ctx.restore();
+    }
+    ctx.globalAlpha = 1;
+
+    if (passou < duracao) requestAnimationFrame(quadro);
+    else { ctx.clearRect(0, 0, L, A); cv.hidden = true; }
+  })(inicio);
+}
+
+/* ============ fluxo ============ */
+$$(".cartao").forEach(b => {
+  b.addEventListener("click", () => {
+    tipo = b.dataset.tipo;
+    passo = 1; publicado = false; campanhaId = null; resumo = { ...resumoVazio };
+    sincronizarCampos(); montarPasso(); irPara("criar"); salvar();
+  });
+});
+$("#btn-voltar").addEventListener("click", () => {
+  if (passo > 1) { passo--; montarPasso(); }
+  else irPara("escolha", true);
+});
+$("#btn-anterior").addEventListener("click", () => { if (passo > 1) { passo--; montarPasso(); } });
+$("#btn-proximo").addEventListener("click", async () => {
+  if (!validar()) { aviso("Falta preencher o que está em vermelho."); return; }
+  if (passo < 3) { passo++; montarPasso(); return; }
+  const botao = $("#btn-proximo");
+  botao.textContent = "Publicando…";
+  botao.classList.add("btn--bloqueado");
+  const c = atual();
+  try {
+    const d = await comoDono("/api/campanhas", {
+      method: "POST",
+      body: JSON.stringify({
+        id: campanhaId, tipo: tipo, titulo: c.titulo, descricao: c.descricao, fotos: c.fotos,
+        organizador: est.organizador, pix: est.pix,
+        meta: c.meta, valores: c.valores, livre: c.livre, anonimo: c.anonimo,
+        premio: c.premio, preco: c.preco, cotas: c.cotas, promos: c.promos,
+        sorteio: c.sorteio, restantes: c.restantes,
+      }),
+    });
+    campanhaId = d.id;
+    resumo = d.resumo;
+    publicado = true;
+    history.replaceState(null, "", "?c=" + campanhaId);
+    salvar();
+    irPara("publica");
+    desenharPublica(true);
+    confete(tipo === "rifa" ? ["#E2891B", "#F7C46C", "#00A15C", "#FFE9C6"] : null);
+    setTimeout(() => {
+      mostrarSucesso({
+        rifa: tipo === "rifa",
+        titulo: tipo === "rifa" ? "Sua rifa está no ar" : "Sua vaquinha está no ar",
+        rotulo: "link pronto para compartilhar",
+        frase: tipo === "rifa"
+          ? "Agora é link na mão: grupo da família, status, lista de transmissão. <b>As primeiras cotas sempre saem de quem já te conhece.</b>"
+          : "Agora é link na mão: grupo da família, status, lista de transmissão. <b>As primeiras doações sempre vêm de quem já te conhece.</b>",
+        mostrarLink: true,
+        botao: "Ver a página",
+      });
+    }, 700);
+  } catch (e) {
+    aviso(e.message);
+  } finally {
+    botao.textContent = "Publicar campanha";
+    botao.classList.remove("btn--bloqueado");
+  }
+});
+$("#btn-editar").addEventListener("click", () => { irPara("criar", true); montarPasso(); });
+$("#btn-apoiar").addEventListener("click", () => { tipo === "rifa" ? abrirRifa() : abrirDoacao(); });
+
+/* ============ início ============ */
+async function comecar() {
+  carregar();
+  const id = new URLSearchParams(location.search).get("c");
+  if (id) {
+    try {
+      await buscarCampanha(id);
+      sincronizarCampos();
+      desenharPublica(true);
+      irPara("publica");
+      return;
+    } catch (e) { aviso("Não achei essa campanha. Comece uma nova."); }
+  }
+  sincronizarCampos();
+  montarPasso();
+  desenharPublica(false);
+}
+comecar();
+
+// enquanto a página pública estiver aberta, os números se atualizam sozinhos
+setInterval(async () => {
+  if (!campanhaId || !$("#tela-publica").classList.contains("ativa") || folhaAberta) return;
+  const antes = resumo.arrecadado;
+  await atualizarResumo();
+  if (resumo.arrecadado !== antes) desenharPublica(false);
+}, 15000);
+</script>
+
+</body>
+</html>
