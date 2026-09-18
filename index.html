@@ -1533,10 +1533,11 @@ async function comoDono(caminho, opcoes, jaTentou) {
   let senha = senhaGuardada();
   if (!senha) senha = await pedirSenha();
   if (!senha) throw new Error("Sem a senha eu não consigo publicar.");
-  const r = await fetch(caminho, {
+  // mesma insistência do resto: servidor dormindo não é falha, é demora
+  const r = await comInsistencia(() => fetch(caminho, {
     ...opcoes,
     headers: { "Content-Type": "application/json", "x-admin": senha, ...(opcoes && opcoes.headers) },
-  });
+  }), () => aviso("O servidor está acordando…"));
   let corpo = null;
   try { corpo = await r.json(); } catch (e) { corpo = null; }
   if (r.status === 401 && !jaTentou) {
@@ -1556,11 +1557,11 @@ async function subirMidia(arquivo, aoAndar) {
   if (aoAndar) aoAndar("enviando");
   let r;
   try {
-    r = await fetch("/api/midia", {
+    r = await comInsistencia(() => fetch("/api/midia", {
       method: "POST",
       headers: { "Content-Type": arquivo.type || "application/octet-stream", "x-admin": senha },
       body: arquivo,
-    });
+    }), () => aviso("O servidor está acordando…"));
   } catch (e) {
     throw new Error("O arquivo não subiu — a conexão caiu no meio. Tente de novo ou use um arquivo menor.");
   }
@@ -1767,15 +1768,37 @@ function desenharResumo() {
 }
 
 /* ============ conversa com o servidor ============ */
-async function servidor(caminho, opcoes) {
-  const r = await fetch(caminho, {
-    headers: { "Content-Type": "application/json" },
-    ...opcoes,
-  });
-  let corpo = null;
-  try { corpo = await r.json(); } catch (e) { corpo = null; }
-  if (!r.ok) throw new Error((corpo && corpo.erro) || "O servidor não respondeu direito.");
-  return corpo;
+// O servidor gratuito dorme depois de uns minutos parado e reinicia a cada
+// atualização: a primeira chamada depois disso morre no meio e o navegador só
+// diz "Load failed". Então erro de rede não é erro — é motivo para insistir.
+const ehQuedaDeRede = e => /load failed|failed to fetch|network|conexão|aborted/i.test(e.message || "");
+
+async function comInsistencia(tentar, aoDemorar) {
+  const esperas = [0, 1500, 4000, 8000];
+  let ultimo = null;
+  for (let i = 0; i < esperas.length; i++) {
+    if (esperas[i]) await new Promise(r => setTimeout(r, esperas[i]));
+    if (i === 1 && aoDemorar) aoDemorar();
+    try { return await tentar(); }
+    catch (e) {
+      ultimo = e;
+      if (!ehQuedaDeRede(e)) throw e; // erro de verdade não melhora tentando de novo
+    }
+  }
+  throw new Error("O servidor não respondeu. Ele pode estar acordando — espere alguns segundos e tente de novo.");
+}
+
+async function servidor(caminho, opcoes, aoDemorar) {
+  return comInsistencia(async () => {
+    const r = await fetch(caminho, {
+      headers: { "Content-Type": "application/json" },
+      ...opcoes,
+    });
+    let corpo = null;
+    try { corpo = await r.json(); } catch (e) { corpo = null; }
+    if (!r.ok) throw new Error((corpo && corpo.erro) || "O servidor não respondeu direito.");
+    return corpo;
+  }, aoDemorar);
 }
 
 async function buscarCampanha(id) {
@@ -2837,10 +2860,39 @@ async function abrirDetalhe(id) {
     '<div class="cc-acoes" style="margin-top:16px">' +
       '<button class="acao" data-copiar-link="' + id + '">Copiar link</button>' +
       '<button class="acao acao--fraca" id="btn-encerrar">' + (c.encerrada ? "Reabrir campanha" : "Encerrar campanha") + "</button>" +
+      '<button class="acao acao--fraca" id="btn-apagar" style="color:#C13B33">Apagar</button>' +
     "</div><div style='height:8px'></div>";
 
   const btnSortear = $("#btn-sortear");
   if (btnSortear) btnSortear.addEventListener("click", () => sortear(id, btnSortear));
+
+  // apagar é definitivo, então pede um segundo toque em vez de um alerta
+  let confirmando = false;
+  $("#btn-apagar").addEventListener("click", async function () {
+    if (!confirmando) {
+      confirmando = true;
+      this.textContent = "Apagar mesmo?";
+      this.style.background = "#FFF1F0";
+      setTimeout(() => {
+        if (!confirmando) return;
+        confirmando = false;
+        this.textContent = "Apagar";
+        this.style.background = "";
+      }, 4000);
+      return;
+    }
+    confirmando = false;
+    this.textContent = "Apagando…";
+    try {
+      await comoDono("/api/campanhas/" + id, { method: "DELETE" });
+      fecharFolha();
+      aviso("Campanha apagada");
+      await carregarPainel(true);
+    } catch (e) {
+      aviso(e.message);
+      this.textContent = "Apagar";
+    }
+  });
   $$("[data-copiar-link]", $("#detalhe-corpo")).forEach(b => b.addEventListener("click", () => copiarLink(id)));
   $("#btn-encerrar").addEventListener("click", async () => {
     try {

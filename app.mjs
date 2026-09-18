@@ -454,6 +454,20 @@ async function api(req, res, url) {
     return json(res, 200, { campanhas: lista });
   }
 
+  const mApagar = p.match(/^\/api\/campanhas\/([\w-]+)$/);
+  if (mApagar && req.method === 'DELETE') {
+    if (!ehAdmin(req)) return json(res, 401, { erro: 'Senha de administrador necessária.' });
+    const id = mApagar[1];
+    if (!db.campanhas[id]) return json(res, 404, { erro: 'Campanha não encontrada.' });
+    const titulo = db.campanhas[id].titulo;
+    delete db.campanhas[id];
+    db.contribuicoes = db.contribuicoes.filter(c => c.campanhaId !== id);
+    if (db.visitas) delete db.visitas[id];
+    await gravar();
+    console.log(`  [apagada] ${id} · ${titulo}`);
+    return json(res, 200, { apagada: true });
+  }
+
   const mCampanha = p.match(/^\/api\/campanhas\/([\w-]+)$/);
   if (mCampanha && req.method === 'GET') {
     const campanha = db.campanhas[mCampanha[1]];
