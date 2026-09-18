@@ -516,6 +516,9 @@ textarea.entrada{resize:none;min-height:96px;line-height:1.45}
 .pix-passos li{display:flex;gap:9px;font-size:12.5px;color:var(--musgo);align-items:flex-start}
 .contagem{font-variant-numeric:tabular-nums;font-weight:600;color:var(--verde-esc)}
 
+.carregando{flex:1;display:grid;place-items:center;min-height:55vh}
+.carregando .girador{width:22px;height:22px;border-width:2.5px}
+
 /* ---------- spans que precisam empilhar ---------- */
 .cartao__nome,.cartao__texto,.organizador__nome,.organizador__sub,
 .apoiador__nome,.apoiador__msg,.interruptor__texto,.interruptor__sub,
@@ -548,8 +551,11 @@ textarea.entrada{resize:none;min-height:96px;line-height:1.45}
 
 <main class="fone">
 
+  <!-- enquanto o app não sabe quem está do outro lado, ninguém vê tela nenhuma -->
+  <div class="carregando" id="carregando"><span class="girador"></span></div>
+
   <!-- ============ TELA 1: ESCOLHA ============ -->
-  <section class="tela ativa" id="tela-escolha">
+  <section class="tela" id="tela-escolha">
     <div class="rolagem">
       <header class="abertura">
         <div class="marca">
@@ -600,6 +606,28 @@ textarea.entrada{resize:none;min-height:96px;line-height:1.45}
         </ol>
       </div>
       <p class="rodape-nota">Pix processado pela Bass Pago. O dinheiro entra na conta ligada à chave cadastrada.</p>
+    </div>
+  </section>
+
+  <!-- ============ TELA FECHADA: quem chega sem link ============ -->
+  <section class="tela" id="tela-fechada">
+    <div class="rolagem">
+      <header class="abertura">
+        <div class="marca">
+          <span class="marca__selo"><svg width="14" height="14" fill="#fff"><use href="#i-coracao"/></svg></span>
+          Growdy
+        </div>
+        <h1 style="margin-top:26px">Cada campanha<br>tem o seu link.</h1>
+        <p class="legenda">Esta página só abre pelo endereço da campanha, que quem organiza compartilha. Peça o link a quem te chamou para apoiar.</p>
+      </header>
+      <div class="como-funciona" style="margin-top:28px">
+        <h3>Recebeu um link e caiu aqui?</h3>
+        <ol class="passos-lista">
+          <li><span class="bolinha">1</span><span>Confira se o endereço veio inteiro — ele termina com <b>?c=</b> e um código.</span></li>
+          <li><span class="bolinha">2</span><span>Se veio cortado no WhatsApp, peça para mandarem de novo.</span></li>
+        </ol>
+      </div>
+      <p class="rodape-nota">Pix processado pela Bass Pago.</p>
     </div>
   </section>
 
@@ -1020,6 +1048,8 @@ const resumoVazio = {
 };
 let resumo = { ...resumoVazio };
 let campanhaId = null;
+// quem chega pelo link é visitante: vê a campanha e nada mais
+let souDono = false;
 
 let est = JSON.parse(JSON.stringify(padrao));
 let tipo = "doacao";
@@ -1051,8 +1081,10 @@ function carregar() {
 }
 
 /* ============ navegação entre telas ============ */
-const telas = { escolha: $("#tela-escolha"), criar: $("#tela-criar"), publica: $("#tela-publica") };
+const telas = { escolha: $("#tela-escolha"), criar: $("#tela-criar"), publica: $("#tela-publica"), fechada: $("#tela-fechada") };
 function irPara(nome, tras) {
+  const carregando = $("#carregando");
+  if (carregando) carregando.hidden = true;
   Object.keys(telas).forEach(k => telas[k].classList.remove("ativa", "voltando"));
   const alvo = telas[nome];
   alvo.classList.add("ativa");
@@ -1475,6 +1507,9 @@ function desenharPublica(animar) {
   const semCota = ehRifa && publicado && r.cotasRestantes <= 0;
   btn.textContent = semCota ? "Cotas esgotadas" : (ehRifa ? "Escolher cotas" : "Doar agora");
   btn.className = "btn btn__brilho " + (ehRifa ? "btn--ambar" : "btn--principal") + (semCota ? " btn--bloqueado" : "");
+  // visitante não tem porta para a área de criação: some o voltar e o selo
+  $("#btn-editar").hidden = !souDono;
+  $(".selo-exemplo").hidden = !souDono;
   $(".selo-exemplo").textContent = publicado ? "no ar" : "prévia";
   $("#pub-rodape").textContent = publicado
     ? "Pix processado pela Bass Pago. O repasse vai para a chave de " + (est.organizador || "quem organiza") + "."
@@ -2079,8 +2114,19 @@ $("#btn-editar").addEventListener("click", () => { irPara("criar", true); montar
 $("#btn-apoiar").addEventListener("click", () => { tipo === "rifa" ? abrirRifa() : abrirDoacao(); });
 
 /* ============ início ============ */
+// o servidor diz se esta pessoa é dona da casa; sem senha guardada, é visitante
+async function conferirQuemSou() {
+  const senha = senhaGuardada();
+  try {
+    const r = await fetch("/api/eu", { headers: senha ? { "x-admin": senha } : {} });
+    const eu = await r.json();
+    souDono = !!eu.admin;
+  } catch (e) { souDono = false; }
+}
+
 async function comecar() {
   carregar();
+  await conferirQuemSou();
   const id = new URLSearchParams(location.search).get("c");
   if (id) {
     try {
@@ -2089,11 +2135,17 @@ async function comecar() {
       desenharPublica(true);
       irPara("publica");
       return;
-    } catch (e) { aviso("Não achei essa campanha. Comece uma nova."); }
+    } catch (e) {
+      // link errado na mão de visitante não vira convite para criar campanha
+      if (!souDono) { irPara("fechada"); return; }
+      aviso("Não achei essa campanha. Comece uma nova.");
+    }
   }
+  if (!souDono) { irPara("fechada"); return; }
   sincronizarCampos();
   montarPasso();
   desenharPublica(false);
+  irPara("escolha");
 }
 comecar();
 

@@ -223,6 +223,12 @@ async function api(req, res, url) {
     return json(res, 200, { admin: ehAdmin(req), exigeSenha: !!SENHA });
   }
 
+  // batida de coração para o serviço não hibernar; de propósito não fala com
+  // a BassPago nem lê disco — é só para manter a máquina acordada
+  if (p === '/api/ping') {
+    return json(res, 200, { ok: true, agora: new Date().toISOString() });
+  }
+
   // saúde da integração: só pede token, não cria cobrança nem move dinheiro
   if (p === '/api/saude' && req.method === 'GET') {
     try { await tokenCashIn(); return json(res, 200, { ok: true, bass: 'autenticado', chave: env.BASS_CHAVE_PIX }); }
