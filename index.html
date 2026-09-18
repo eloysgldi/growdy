@@ -523,6 +523,53 @@ textarea.entrada{resize:none;min-height:96px;line-height:1.45}
 .pix-passos li{display:flex;gap:9px;font-size:12.5px;color:var(--musgo);align-items:flex-start}
 .contagem{font-variant-numeric:tabular-nums;font-weight:600;color:var(--verde-esc)}
 
+/* ---------- player de vídeo com a cara do projeto ---------- */
+.player{position:relative;border-radius:20px;overflow:hidden;background:#0B140F;isolation:isolate;touch-action:manipulation}
+.player video{display:block;width:100%;max-height:62vh;background:#0B140F}
+.player__toque{position:absolute;inset:0;background:transparent}
+.player__capa{
+  position:absolute;inset:0;display:grid;place-items:center;
+  background:radial-gradient(60% 60% at 50% 50%, rgba(11,20,15,.25), rgba(11,20,15,.62));
+  transition:opacity .35s var(--suave);
+}
+.player__capa.some{opacity:0;pointer-events:none}
+.player__grande{
+  width:72px;height:72px;border-radius:50%;background:rgba(255,255,255,.96);color:var(--verde-esc);
+  display:grid;place-items:center;box-shadow:0 14px 34px -12px rgba(0,0,0,.7);
+  transition:transform .28s var(--mola);animation:selo-mola .6s var(--mola) both;
+}
+.player--ambar .player__grande{color:var(--ambar-esc)}
+.player__grande:active{transform:scale(.88)}
+.player__controles{
+  position:absolute;left:0;right:0;bottom:0;display:flex;align-items:center;gap:10px;
+  padding:14px 12px 12px;background:linear-gradient(to top,rgba(6,14,10,.88),rgba(6,14,10,.35) 60%,transparent);
+  transition:opacity .35s var(--suave),transform .35s var(--suave);
+}
+.player__controles.recolhida{opacity:0;transform:translateY(6px);pointer-events:none}
+.player__btn{width:32px;height:32px;flex:none;border-radius:10px;display:grid;place-items:center;color:#fff;transition:transform .2s var(--mola),background .2s}
+.player__btn:active{transform:scale(.88);background:rgba(255,255,255,.16)}
+.player__trilha{flex:1;height:22px;display:flex;align-items:center;cursor:pointer;touch-action:none}
+.player__calha{position:relative;width:100%;height:5px;border-radius:99px;background:rgba(255,255,255,.26)}
+.player__carregado{position:absolute;left:0;top:0;bottom:0;border-radius:99px;background:rgba(255,255,255,.22)}
+.player__fita{position:absolute;left:0;top:0;bottom:0;border-radius:99px;background:var(--verde-vivo);transition:width .08s linear}
+.player--ambar .player__fita{background:#F7C46C}
+.player__bolinha{
+  position:absolute;top:50%;width:13px;height:13px;border-radius:50%;background:#fff;
+  transform:translate(-50%,-50%);box-shadow:0 2px 8px rgba(0,0,0,.5);transition:transform .15s var(--mola);
+}
+.player__trilha:active .player__bolinha{transform:translate(-50%,-50%) scale(1.35)}
+.player__tempo{
+  font-family:"DM Mono",Consolas,monospace;font-size:11px;color:rgba(255,255,255,.92);
+  font-variant-numeric:tabular-nums;white-space:nowrap;letter-spacing:-.02em;
+}
+.player__erro{
+  display:grid;place-items:center;gap:10px;padding:34px 20px;text-align:center;
+  color:#D9E7E0;font-size:13.5px;line-height:1.5;background:#0B140F;
+}
+.player__erro b{color:#fff;font-weight:700}
+.player__girador{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none}
+.player__girador .girador{width:26px;height:26px;border-width:3px;border-color:rgba(255,255,255,.3);border-top-color:#fff}
+
 /* ---------- painel de quem organiza ---------- */
 .painel-resumo{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:4px}
 .painel-tijolo{padding:13px 10px;border-radius:17px;background:var(--nevoa);text-align:center}
@@ -1399,10 +1446,13 @@ async function desenharPreviaPremio() {
       return;
     }
   }
-  caixa.innerHTML = (r.tipo === "video"
-    ? '<video class="premio-previa" src="' + fonte + '" controls playsinline preload="metadata"></video>'
-    : '<img class="premio-previa" src="' + fonte + '" alt="Prévia do prêmio">') +
-    '<div class="premio-legenda">No ar. Só quem apoiar consegue abrir — nem o link direto funciona.</div>';
+  if (r.tipo === "video") {
+    caixa.innerHTML = '<div class="palco-player"></div><div class="premio-legenda">No ar. Só quem apoiar consegue abrir — nem o link direto funciona.</div>';
+    montarPlayer($(".palco-player", caixa), fonte);
+  } else {
+    caixa.innerHTML = '<img class="premio-previa" src="' + fonte + '" alt="Prévia do prêmio">' +
+      '<div class="premio-legenda">No ar. Só quem apoiar consegue abrir — nem o link direto funciona.</div>';
+  }
 }
 
 function marcarErro(idCampo, idErro, ruim) {
@@ -1585,6 +1635,130 @@ async function subirFoto(dataURL) {
   }
 }
 
+/* ============ player de vídeo ============
+   O player nativo do navegador é feio e diferente em cada aparelho. Este usa os
+   mesmos botões, cantos e cores do resto do app, e funciona no toque. */
+const ICONE_TOCAR = '<svg width="26" height="26" viewBox="0 0 24 24"><path d="M8 5.6c0-.8.9-1.3 1.6-.9l9 6.4c.6.4.6 1.4 0 1.8l-9 6.4c-.7.5-1.6 0-1.6-.9z" fill="currentColor"/></svg>';
+const ICONE_TOCAR_MINI = '<svg width="17" height="17" viewBox="0 0 24 24"><path d="M8 5.6c0-.8.9-1.3 1.6-.9l9 6.4c.6.4.6 1.4 0 1.8l-9 6.4c-.7.5-1.6 0-1.6-.9z" fill="currentColor"/></svg>';
+const ICONE_PAUSAR = '<svg width="17" height="17" viewBox="0 0 24 24"><rect x="7" y="5" width="3.6" height="14" rx="1.3" fill="currentColor"/><rect x="13.4" y="5" width="3.6" height="14" rx="1.3" fill="currentColor"/></svg>';
+const ICONE_TELA = '<svg width="16" height="16" viewBox="0 0 24 24"><path d="M9 4H4v5M15 4h5v5M9 20H4v-5M15 20h5v-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+const mmss = s => {
+  if (!isFinite(s) || s < 0) s = 0;
+  const m = Math.floor(s / 60);
+  return m + ":" + String(Math.floor(s % 60)).padStart(2, "0");
+};
+
+function montarPlayer(alvo, fonte, opcoes) {
+  const o = opcoes || {};
+  alvo.className = "player" + (o.ambar ? " player--ambar" : "");
+  alvo.innerHTML =
+    '<video playsinline webkit-playsinline preload="metadata" src="' + fonte + '"></video>' +
+    '<button class="player__toque" aria-label="Tocar ou pausar"></button>' +
+    '<div class="player__girador" hidden><span class="girador"></span></div>' +
+    '<div class="player__capa"><span class="player__grande">' + ICONE_TOCAR + "</span></div>" +
+    '<div class="player__controles">' +
+      '<button class="player__btn" data-tocar aria-label="Tocar">' + ICONE_TOCAR_MINI + "</button>" +
+      '<span class="player__trilha" data-trilha><span class="player__calha">' +
+        '<span class="player__carregado" data-carregado style="width:0%"></span>' +
+        '<span class="player__fita" data-fita style="width:0%"></span>' +
+        '<span class="player__bolinha" data-bolinha style="left:0%"></span>' +
+      "</span></span>" +
+      '<span class="player__tempo" data-tempo>0:00 / 0:00</span>' +
+      '<button class="player__btn" data-tela aria-label="Tela cheia">' + ICONE_TELA + "</button>" +
+    "</div>";
+
+  const video = $("video", alvo);
+  const capa = $(".player__capa", alvo);
+  const controles = $(".player__controles", alvo);
+  const botao = $("[data-tocar]", alvo);
+  const fita = $("[data-fita]", alvo);
+  const bolinha = $("[data-bolinha]", alvo);
+  const carregado = $("[data-carregado]", alvo);
+  const tempo = $("[data-tempo]", alvo);
+  const girador = $(".player__girador", alvo);
+
+  let sumir = null;
+  const mostrarControles = () => {
+    controles.classList.remove("recolhida");
+    clearTimeout(sumir);
+    if (!video.paused) sumir = setTimeout(() => controles.classList.add("recolhida"), 2600);
+  };
+
+  const alternar = () => {
+    if (video.paused) {
+      video.play().catch(() => { /* o navegador pode recusar sem toque; o botão resolve */ });
+    } else video.pause();
+    mostrarControles();
+  };
+  $(".player__toque", alvo).addEventListener("click", alternar);
+  $(".player__grande", alvo).addEventListener("click", alternar);
+  botao.addEventListener("click", alternar);
+
+  video.addEventListener("play", () => {
+    capa.classList.add("some");
+    botao.innerHTML = ICONE_PAUSAR;
+    botao.setAttribute("aria-label", "Pausar");
+    mostrarControles();
+  });
+  video.addEventListener("pause", () => {
+    botao.innerHTML = ICONE_TOCAR_MINI;
+    botao.setAttribute("aria-label", "Tocar");
+    controles.classList.remove("recolhida");
+    clearTimeout(sumir);
+  });
+  video.addEventListener("ended", () => { capa.classList.remove("some"); });
+  video.addEventListener("waiting", () => { girador.hidden = false; });
+  video.addEventListener("playing", () => { girador.hidden = true; });
+  video.addEventListener("loadedmetadata", () => { tempo.textContent = "0:00 / " + mmss(video.duration); });
+
+  video.addEventListener("timeupdate", () => {
+    const parte = video.duration ? (video.currentTime / video.duration) * 100 : 0;
+    fita.style.width = parte + "%";
+    bolinha.style.left = parte + "%";
+    tempo.textContent = mmss(video.currentTime) + " / " + mmss(video.duration);
+  });
+  video.addEventListener("progress", () => {
+    if (!video.buffered.length || !video.duration) return;
+    carregado.style.width = (video.buffered.end(video.buffered.length - 1) / video.duration) * 100 + "%";
+  });
+
+  // arrastar para procurar o trecho
+  const trilha = $("[data-trilha]", alvo);
+  let arrastando = false;
+  const irPara = ev => {
+    const caixa = trilha.getBoundingClientRect();
+    const x = (ev.clientX !== undefined ? ev.clientX : (ev.touches && ev.touches[0].clientX)) - caixa.left;
+    const parte = Math.min(1, Math.max(0, x / caixa.width));
+    if (video.duration) video.currentTime = parte * video.duration;
+    fita.style.width = parte * 100 + "%";
+    bolinha.style.left = parte * 100 + "%";
+    mostrarControles();
+  };
+  trilha.addEventListener("pointerdown", e => { arrastando = true; trilha.setPointerCapture(e.pointerId); irPara(e); });
+  trilha.addEventListener("pointermove", e => { if (arrastando) irPara(e); });
+  trilha.addEventListener("pointerup", e => { arrastando = false; try { trilha.releasePointerCapture(e.pointerId); } catch (err) { } });
+  trilha.addEventListener("pointercancel", () => { arrastando = false; });
+
+  $("[data-tela]", alvo).addEventListener("click", () => {
+    if (video.webkitEnterFullscreen) return video.webkitEnterFullscreen(); // iPhone só aceita no vídeo
+    if (alvo.requestFullscreen) alvo.requestFullscreen().catch(() => {});
+  });
+
+  video.addEventListener("error", () => {
+    const ehMov = /\.mov(\?|$)/i.test(fonte);
+    alvo.innerHTML =
+      '<div class="player__erro"><svg width="26" height="26" style="color:#F2A33C"><use href="#i-x"/></svg>' +
+      "<span><b>Não consegui tocar este vídeo neste aparelho.</b><br>" +
+      (ehMov
+        ? "Ele está em .mov, o formato da câmera do iPhone, que o Android e alguns navegadores não abrem. Um vídeo em MP4 toca em todo lugar."
+        : "O formato pode não ser aceito aqui. Tente um MP4.") +
+      "</span></div>";
+  });
+
+  return video;
+}
+
 /* ============ máscaras ============ */
 function moeda(input, aoMudar) {
   input.addEventListener("input", () => {
@@ -1725,6 +1899,10 @@ $("#entrada-premio").addEventListener("change", async ev => {
     return;
   }
   if (arquivo.size > 25e6) { aviso("O arquivo tem " + (arquivo.size / 1e6).toFixed(0) + " MB. O limite é 25 MB."); return; }
+  // .mov é o que a câmera do iPhone grava, e boa parte dos Android não abre
+  if (ehVideo && /quicktime|\.mov$/i.test(arquivo.type + arquivo.name)) {
+    aviso("Vídeo em .mov pode não abrir no Android. Se der, envie em MP4.");
+  }
   const botao = $("#btn-premio-arquivo");
   const antes = $("#premio-arquivo-texto").textContent;
   $("#premio-arquivo-texto").textContent = "enviando…";
@@ -2673,11 +2851,18 @@ function desenharPremio(estado, midia) {
   if (midia) {
     corpo.innerHTML = cabeca +
       (ehVideo
-        ? '<video class="premio-midia" src="' + midia + '" controls autoplay playsinline style="margin-top:14px"></video>'
+        ? '<div class="palco-player" style="margin-top:14px"></div>'
         : '<img class="premio-midia" src="' + midia + '" alt="' + estado.titulo + '" style="margin-top:14px">') +
       '<p class="rodape-nota" style="padding:12px 0 0">' +
-        (ehVideo ? "Toque e segure para salvar o vídeo." : "Toque e segure na imagem para salvar.") +
-      " Ele fica guardado aqui — é só voltar pelo link da campanha.</p>";
+        (ehVideo ? "Toque para assistir quantas vezes quiser." : "Toque e segure na imagem para salvar.") +
+      " Fica guardado aqui — é só voltar pelo link da campanha.</p>";
+    if (ehVideo) {
+      const video = montarPlayer($(".palco-player", corpo), midia, { ambar: tipo === "rifa" });
+      // o prêmio acabou de ser aberto: começa a tocar sozinho, no mudo, como todo
+      // navegador exige, e o som entra quando a pessoa tocar
+      video.muted = true;
+      video.play().then(() => { video.muted = false; }).catch(() => { video.muted = false; });
+    }
     acao.hidden = true;
     return;
   }

@@ -26,7 +26,10 @@ const SENHA = env.ADMIN_SENHA || '';
 const TIPOS = {
   '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8',
   '.js': 'text/javascript; charset=utf-8', '.json': 'application/json; charset=utf-8',
-  '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.webp': 'image/webp',
+  '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg',
+  '.webp': 'image/webp', '.gif': 'image/gif',
+  // sem estes o vídeo do prêmio saía como octet-stream e nenhum player tocava
+  '.mp4': 'video/mp4', '.webm': 'video/webm', '.mov': 'video/quicktime', '.m4v': 'video/mp4',
 };
 
 /* ---------------- banco de dados de arquivo ---------------- */
@@ -855,8 +858,15 @@ const servidor = createServer(async (req, res) => {
       const faixa = req.headers.range;
       if (faixa && tipo.startsWith('video')) {
         const casa = /bytes=(\d*)-(\d*)/.exec(faixa) || [];
-        const inicio = casa[1] ? parseInt(casa[1], 10) : 0;
-        const fim = casa[2] ? parseInt(casa[2], 10) : buf.length - 1;
+        let inicio = casa[1] ? parseInt(casa[1], 10) : 0;
+        let fim = casa[2] ? parseInt(casa[2], 10) : buf.length - 1;
+        if (!Number.isFinite(inicio) || inicio < 0) inicio = 0;
+        if (!Number.isFinite(fim) || fim >= buf.length) fim = buf.length - 1;
+        if (inicio > fim) {
+          // pedido fora do arquivo: o player espera este aviso, não um pedaço vazio
+          res.writeHead(416, { 'Content-Range': 'bytes */' + buf.length }).end();
+          return;
+        }
         const pedaco = buf.subarray(inicio, fim + 1);
         res.writeHead(206, {
           'Content-Type': tipo,
