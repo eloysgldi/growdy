@@ -4,6 +4,17 @@
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', e => e.waitUntil(self.clients.claim()));
 
+// Sem este ouvinte o navegador nem oferece instalar o app. Ele não guarda nada
+// em cache de propósito: a página é sempre a do servidor, para você nunca ficar
+// olhando número velho de campanha.
+self.addEventListener('fetch', evento => {
+  if (evento.request.method !== 'GET') return;
+  evento.respondWith(fetch(evento.request).catch(() => new Response(
+    'Sem conexão agora. Abra de novo quando a internet voltar.',
+    { status: 503, headers: { 'Content-Type': 'text/plain; charset=utf-8' } }
+  )));
+});
+
 self.addEventListener('push', evento => {
   let aviso = {};
   try { aviso = evento.data ? evento.data.json() : {}; }
