@@ -13,5 +13,8 @@
     "semear": "node semear.mjs",
     "semear:refazer": "node semear.mjs --refazer",
     "teste:pix": "node teste-pix.mjs"
+  },
+  "dependencies": {
+    "web-push": "^3.6.7"
   }
 }

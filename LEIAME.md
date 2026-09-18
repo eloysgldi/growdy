@@ -70,6 +70,67 @@ e o servidor grava o arquivo em `DADOS_DIR/fotos/<uuid>.jpg`. A campanha guarda 
    `https://seu-app.onrender.com/api/webhooks/bass` na BassPago para o evento `RECEIVE`.
    Sem ele a página ainda confirma sozinha, porque consulta `GET /cob/{txid}` a cada 3 segundos.
 
+## Painel de quem organiza
+
+Abrindo o site com a senha (`/?admin=1`), a casa passa a ser o painel:
+arrecadado, apoiadores e visitas de hoje somados; um cartão por campanha com
+barra de progresso, quantas pessoas viram (hoje e no total) e os botões de
+detalhes, ver página e copiar link.
+
+Em **Detalhes**: a lista de quem apoiou (com recado, cotas e números), quantos Pix
+estão aguardando, o sorteio da rifa e o botão de encerrar ou reabrir.
+
+**Sorteio.** Na rifa, `Sortear o ganhador agora` escolhe **entre números vendidos**,
+não entre pessoas — quem comprou 10 cotas tem 10 vezes mais chance, como numa
+rifa de papel. O resultado fica guardado com a hora e quantas cotas concorriam.
+
+## Notificações no celular
+
+O app é instalável (manifest + service worker), e é assim que o push funciona
+no iPhone: **Compartilhar > Adicionar à Tela de Início**, e abrir por esse ícone.
+No Android e no computador, funciona direto pelo navegador.
+
+No painel, o sino liga as notificações naquele aparelho. A partir daí chega:
+
+- **cada apoio que cair**, com valor, quem foi e como ficou o andamento
+- **o resultado do sorteio**, com número e nome
+- **o resumo do dia**, à noite: quantas pessoas viram, quantas apoiaram e quanto entrou
+
+O resumo é disparado pelo mesmo ping do cron-job, depois das 20h, uma vez por dia.
+Com o sino ligado, tocar no sino de novo manda uma notificação de teste.
+
+As chaves VAPID vão no `.env` (`VAPID_PUBLICA`, `VAPID_PRIVADA`, `VAPID_CONTATO`).
+Para gerar outras:
+
+```bash
+node -e "console.log(JSON.stringify(require('web-push').generateVAPIDKeys()))"
+```
+
+## Prêmio em foto ou vídeo
+
+No passo 3 da criação dá para anexar uma foto ou um vídeo (até 25 MB) que fica
+guardado no Supabase junto com o resto.
+
+| Tipo de campanha | Quem recebe |
+|---|---|
+| Vaquinha | todo mundo que apoiou, num botão logo depois do Pix |
+| Rifa | só o ganhador, e só depois do sorteio |
+
+O arquivo **não é público**. Ele só abre em `/midia/<nome>?t=<txid>&k=<chave>`, com o
+par que o servidor entregou a quem pagou — e, na rifa, só se o número bater. Sem
+isso, o servidor devolve 403, mesmo com o endereço exato na mão. Quem organiza vê
+o próprio arquivo pela senha de administrador.
+
+A chave fica guardada no aparelho de quem apoiou, então dá para fechar a página e
+voltar depois pelo link da campanha: aparece um botão *Ver o meu prêmio*.
+
+## Visitas
+
+Cada abertura da página pública conta uma visita, e o par visitante+dia é
+reduzido a um hash em memória para a mesma pessoa não contar duas vezes no
+mesmo dia. Quem organiza não conta como visita na própria campanha. Os números
+por dia ficam guardados; a lista de quem já foi contado se perde no reinício.
+
 ## Como o pagamento funciona
 
 1. A pessoa escolhe o valor (vaquinha) ou a quantidade de cotas (rifa, com as promoções aplicadas).

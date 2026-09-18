@@ -10,6 +10,13 @@ img{max-width:100%}
 [hidden]{display:none!important}
 </style>
 <title>Growdy Vaquinha e Rifas</title>
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#00A15C">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Growdy">
+<link rel="apple-touch-icon" href="/icone-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="/icone-512.png">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -516,6 +523,75 @@ textarea.entrada{resize:none;min-height:96px;line-height:1.45}
 .pix-passos li{display:flex;gap:9px;font-size:12.5px;color:var(--musgo);align-items:flex-start}
 .contagem{font-variant-numeric:tabular-nums;font-weight:600;color:var(--verde-esc)}
 
+/* ---------- painel de quem organiza ---------- */
+.painel-resumo{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:4px}
+.painel-tijolo{padding:13px 10px;border-radius:17px;background:var(--nevoa);text-align:center}
+.painel-tijolo__num{font-family:"Bricolage Grotesque",Georgia,serif;font-size:19px;font-weight:800;color:var(--verde-esc);letter-spacing:-.03em;font-variant-numeric:tabular-nums;white-space:nowrap}
+.painel-tijolo__rot{font-size:10.5px;color:var(--musgo);margin-top:3px}
+
+.sino{display:flex;align-items:center;gap:12px;width:100%;text-align:left;margin-top:14px;padding:14px;border-radius:18px;background:var(--branco);border:1.5px solid var(--linha);transition:border-color .2s,transform .2s var(--mola)}
+.sino:active{transform:scale(.99)}
+.sino.ligado{border-color:var(--verde-vivo);background:var(--nevoa)}
+.sino__icone{width:38px;height:38px;flex:none;border-radius:13px;display:grid;place-items:center;background:var(--nevoa-forte);color:var(--verde-esc)}
+.sino.ligado .sino__icone{background:var(--verde);color:#fff}
+.sino__texto{font-size:13.5px;font-weight:700;color:var(--verde-esc);display:block}
+.sino__sub{font-size:12px;color:var(--musgo);display:block;margin-top:2px}
+
+.cartao-campanha{
+  position:relative;display:block;width:100%;text-align:left;margin-top:12px;padding:14px;
+  border-radius:22px;background:var(--branco);border:1.5px solid var(--linha);box-shadow:var(--sombra-baixa);
+  animation:subir .45s var(--mola) both;
+}
+.cartao-campanha--rifa{border-color:var(--ambar-linha)}
+.cartao-campanha--fim{opacity:.62}
+.cc-topo{display:flex;gap:12px;align-items:flex-start}
+.cc-capa{width:56px;height:56px;flex:none;border-radius:15px;object-fit:cover;background:var(--nevoa)}
+.cc-capa--vazia{display:grid;place-items:center;color:var(--musgo-claro)}
+.cc-nome{font-family:"Bricolage Grotesque",Georgia,serif;font-weight:700;font-size:15.5px;color:var(--verde-esc);line-height:1.2;letter-spacing:-.01em}
+.cartao-campanha--rifa .cc-nome{color:var(--ambar-esc)}
+.cc-selos{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
+.selo{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:3px 7px;border-radius:7px;background:var(--nevoa-forte);color:var(--verde-esc)}
+.selo--rifa{background:var(--ambar-nevoa);color:var(--ambar-esc)}
+.selo--premio{background:#F2E9FF;color:#5B3A96}
+.selo--fim{background:#EFEFEF;color:#6B6B6B}
+.selo--ganhador{background:var(--verde);color:#fff}
+.cc-barra{height:7px;border-radius:99px;background:var(--nevoa-forte);margin-top:12px;overflow:hidden}
+.cc-barra__fita{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--verde),var(--verde-vivo));transition:width .8s var(--mola)}
+.cartao-campanha--rifa .cc-barra__fita{background:linear-gradient(90deg,var(--ambar),#F7C46C)}
+.cc-numeros{display:flex;gap:10px;margin-top:9px;font-size:12px;color:var(--musgo);flex-wrap:wrap;font-variant-numeric:tabular-nums}
+.cc-numeros b{color:var(--verde-esc);font-weight:700}
+.cartao-campanha--rifa .cc-numeros b{color:var(--ambar-esc)}
+.cc-acoes{display:flex;gap:7px;margin-top:12px;flex-wrap:wrap}
+.acao{flex:1;min-width:72px;padding:10px 8px;border-radius:13px;background:var(--nevoa);color:var(--verde-esc);font-size:12.5px;font-weight:700;text-align:center;transition:transform .2s var(--mola),background .2s}
+.acao:active{transform:scale(.95)}
+.acao--forte{background:var(--verde);color:#fff}
+.acao--ambar{background:var(--ambar);color:#fff}
+.acao--fraca{background:transparent;color:var(--musgo);border:1.5px solid var(--linha)}
+
+.apoio{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid var(--linha)}
+.apoio:last-child{border-bottom:0}
+.apoio__quando{font-size:11px;color:var(--musgo-claro);margin-top:1px}
+.apoio__num{margin-left:auto;text-align:right;font-family:"DM Mono",Consolas,monospace;font-size:13.5px;color:var(--verde);white-space:nowrap}
+.bilhetinhos{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
+.bilhetinho{font-family:"DM Mono",Consolas,monospace;font-size:10.5px;color:var(--ambar-esc);background:var(--ambar-nevoa);padding:2px 6px;border-radius:6px}
+.vazio{padding:26px 10px;text-align:center;color:var(--musgo);font-size:13.5px}
+
+/* ---------- prêmio ---------- */
+.premio-caixa{margin-top:10px;border-radius:18px;overflow:hidden;border:1.5px solid var(--linha);background:var(--nevoa)}
+.premio-previa{width:100%;max-height:260px;object-fit:cover;display:block;background:#0E1C16}
+video.premio-previa{max-height:320px;object-fit:contain}
+.premio-legenda{padding:11px 13px;font-size:12.5px;color:var(--musgo)}
+.premio-vitrine{
+  margin-top:16px;padding:16px;border-radius:22px;position:relative;overflow:hidden;
+  background:linear-gradient(135deg,#F6F0FF,#EFF9F3);border:1.5px solid #E6DAFB;
+}
+.premio-vitrine__selo{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#5B3A96}
+.premio-vitrine__titulo{font-family:"Bricolage Grotesque",Georgia,serif;font-weight:700;font-size:16px;color:var(--verde-esc);margin-top:7px;letter-spacing:-.01em}
+.premio-vitrine__texto{font-size:13px;color:var(--musgo);margin-top:5px;line-height:1.45}
+.premio-fechado{display:grid;place-items:center;gap:10px;padding:30px 16px;text-align:center;border-radius:18px;background:var(--nevoa);color:var(--musgo);font-size:13.5px}
+.premio-midia{width:100%;border-radius:18px;display:block;background:#0E1C16;max-height:64vh;object-fit:contain}
+.premio-numero{font-family:"DM Mono",Consolas,monospace;font-size:22px;color:var(--ambar-esc);font-weight:500}
+
 .carregando{flex:1;display:grid;place-items:center;min-height:55vh}
 .carregando .girador{width:22px;height:22px;border-width:2.5px}
 
@@ -545,6 +621,10 @@ textarea.entrada{resize:none;min-height:96px;line-height:1.45}
     <symbol id="i-coracao" viewBox="0 0 24 24"><path d="M12 20s-7.2-4.4-9.1-8.5C1.3 8 3.2 4.6 6.6 4.6c2 0 3.5 1.1 4.4 2.5.9-1.4 2.4-2.5 4.4-2.5 3.4 0 5.3 3.4 3.7 6.9C19.2 15.6 12 20 12 20z" fill="currentColor"/></symbol>
     <symbol id="i-gente" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3.5 19c.6-3 2.8-4.6 5.5-4.6S14 16 14.5 19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M16.2 6.2a3 3 0 0 1 0 5.6M17.5 14.6c2 .5 3.3 2 3.7 4.4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
     <symbol id="i-relogio" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 7.3V12l3 1.8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-presente" viewBox="0 0 24 24"><rect x="3.5" y="9" width="17" height="11.5" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="2.5" y="5.5" width="19" height="3.5" rx="1.4" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 5.5v15M12 5.5c-1-2.6-2.4-3.4-3.7-2.9-1.2.5-1.2 2.2.4 2.9zM12 5.5c1-2.6 2.4-3.4 3.7-2.9 1.2.5 1.2 2.2-.4 2.9z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+    <symbol id="i-sino" viewBox="0 0 24 24"><path d="M18 15.5V11a6 6 0 1 0-12 0v4.5L4.4 18h15.2z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M10 18.5a2 2 0 0 0 4 0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-olho" viewBox="0 0 24 24"><path d="M2.5 12S6 6.5 12 6.5 21.5 12 21.5 12 18 17.5 12 17.5 2.5 12 2.5 12z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
+    <symbol id="i-sorteio" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3.6" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="9" cy="9" r="1.4" fill="currentColor"/><circle cx="15" cy="15" r="1.4" fill="currentColor"/><circle cx="15" cy="9" r="1.4" fill="currentColor"/><circle cx="9" cy="15" r="1.4" fill="currentColor"/></symbol>
     <symbol id="i-copiar" viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2.6" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M15 6.5A2.5 2.5 0 0 0 12.5 4h-6A2.5 2.5 0 0 0 4 6.5v6A2.5 2.5 0 0 0 6.5 15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
   </defs>
 </svg>
@@ -606,6 +686,40 @@ textarea.entrada{resize:none;min-height:96px;line-height:1.45}
         </ol>
       </div>
       <p class="rodape-nota">Pix processado pela Bass Pago. O dinheiro entra na conta ligada à chave cadastrada.</p>
+    </div>
+  </section>
+
+  <!-- ============ PAINEL: só de quem organiza ============ -->
+  <section class="tela" id="tela-painel">
+    <header class="topo">
+      <div class="topo__linha">
+        <span class="marca__selo" style="width:30px;height:30px"><svg width="15" height="15" fill="#fff"><use href="#i-coracao"/></svg></span>
+        <span class="topo__titulo">Suas campanhas</span>
+        <button class="voltar" id="btn-atualizar-painel" aria-label="Atualizar" style="margin-left:auto">
+          <svg width="17" height="17" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.3-5.6M20 4v4h-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <div class="rolagem">
+      <div class="miolo">
+        <div class="painel-resumo" id="painel-totais"></div>
+
+        <button class="sino" id="btn-sino">
+          <span class="sino__icone"><svg width="19" height="19"><use href="#i-sino"/></svg></span>
+          <span>
+            <span class="sino__texto" id="sino-texto">Receber aviso de cada apoio</span>
+            <span class="sino__sub" id="sino-sub">Toque para ligar as notificações neste aparelho</span>
+          </span>
+        </button>
+
+        <div id="painel-lista"></div>
+        <div style="height:18px"></div>
+      </div>
+    </div>
+
+    <div class="barra-acao">
+      <button class="btn btn--principal" id="btn-nova-campanha">Criar nova campanha</button>
     </div>
   </section>
 
@@ -750,9 +864,55 @@ textarea.entrada{resize:none;min-height:96px;line-height:1.45}
         <div style="height:24px"></div>
       </div>
 
-      <!-- passo 3 -->
+      <!-- passo 3 — o prêmio -->
       <div class="miolo passo" data-passo="3" hidden>
-        <p class="olho">Passo 3 — recebimento</p>
+        <p class="olho">Passo 3 — o prêmio</p>
+        <h2>Quer entregar algo em troca?</h2>
+        <p class="legenda" id="premio-explica">Uma foto ou um vídeo que a pessoa recebe pelo apoio. Fica guardado e só abre para quem pagou.</p>
+
+        <button class="interruptor" id="f-premio-ativo" aria-pressed="false">
+          <span>
+            <span class="interruptor__texto">Entregar um prêmio digital</span>
+            <span class="interruptor__sub" id="premio-quem">Todo mundo que doar recebe</span>
+          </span>
+          <span class="chave" style="margin-left:auto"></span>
+        </button>
+
+        <div id="premio-campos" hidden>
+          <div class="campo">
+            <span class="campo__nome">O que é</span>
+            <div class="chips" id="premio-tipo">
+              <button class="chip ativo" data-tipo="foto">Foto</button>
+              <button class="chip" data-tipo="video">Vídeo</button>
+            </div>
+          </div>
+
+          <div class="campo">
+            <span class="campo__nome">Arquivo <span class="campo__dica" id="premio-limite">até 25 MB</span></span>
+            <button class="add-foto" id="btn-premio-arquivo" style="aspect-ratio:auto;padding:20px;width:100%">
+              <span class="add-foto__conteudo"><svg width="22" height="22"><use href="#i-camera"/></svg><span id="premio-arquivo-texto">escolher arquivo</span></span>
+            </button>
+            <input type="file" id="entrada-premio" accept="image/*,video/*" hidden>
+            <div class="premio-caixa" id="premio-previa" hidden></div>
+            <p class="erro" id="erro-premio-arquivo">Escolha a foto ou o vídeo do prêmio.</p>
+          </div>
+
+          <label class="campo" for="f-premio-titulo">
+            <span class="campo__nome">Nome do prêmio</span>
+            <input class="entrada" id="f-premio-titulo" maxlength="60" placeholder="Ex.: Vídeo de agradecimento do time">
+          </label>
+
+          <label class="campo" for="f-premio-msg">
+            <span class="campo__nome">Recado que aparece junto <span class="campo__dica">opcional</span></span>
+            <input class="entrada" id="f-premio-msg" maxlength="140" placeholder="Ex.: Obrigado por fazer parte disso!">
+          </label>
+        </div>
+        <div style="height:24px"></div>
+      </div>
+
+      <!-- passo 4 -->
+      <div class="miolo passo" data-passo="4" hidden>
+        <p class="olho">Passo 4 — recebimento</p>
         <h2>Para onde vai o dinheiro</h2>
         <p class="legenda">A Growdy recebe os Pix da campanha e repassa para a sua chave. Quem apoia vê o seu nome na página.</p>
 
@@ -820,6 +980,12 @@ textarea.entrada{resize:none;min-height:96px;line-height:1.45}
         <div class="secao" id="secao-vitrine" hidden>
           <div class="secao__titulo">Promoções</div>
           <div class="pacotes-vitrine" id="pub-vitrine"></div>
+        </div>
+
+        <div class="premio-vitrine" id="pub-premio" hidden>
+          <span class="premio-vitrine__selo"><svg width="14" height="14"><use href="#i-presente"/></svg> <span id="pub-premio-quem">quem apoiar leva</span></span>
+          <div class="premio-vitrine__titulo" id="pub-premio-titulo">—</div>
+          <div class="premio-vitrine__texto" id="pub-premio-texto">—</div>
         </div>
 
         <div class="secao">
@@ -908,6 +1074,32 @@ textarea.entrada{resize:none;min-height:96px;line-height:1.45}
   </div>
   <div class="folha__pe">
     <button class="btn btn--ambar" id="btn-confirmar-rifa" style="width:100%">Pagar no Pix</button>
+  </div>
+</section>
+
+<!-- folha do detalhe da campanha (painel) -->
+<section class="folha" id="folha-campanha" aria-hidden="true">
+  <div class="folha__alca" data-alca><span></span></div>
+  <div class="folha__topo">
+    <span class="folha__titulo" id="detalhe-titulo">Campanha</span>
+    <button class="folha__fechar" data-fechar aria-label="Fechar"><svg width="16" height="16"><use href="#i-x"/></svg></button>
+  </div>
+  <div class="folha__rolagem" id="detalhe-corpo"></div>
+  <div class="folha__pe">
+    <button class="btn btn--principal" id="btn-detalhe-ver" style="width:100%">Ver a página pública</button>
+  </div>
+</section>
+
+<!-- folha do prêmio de quem apoiou -->
+<section class="folha" id="folha-premio" aria-hidden="true">
+  <div class="folha__alca" data-alca><span></span></div>
+  <div class="folha__topo">
+    <span class="folha__titulo">Seu prêmio</span>
+    <button class="folha__fechar" data-fechar aria-label="Fechar"><svg width="16" height="16"><use href="#i-x"/></svg></button>
+  </div>
+  <div class="folha__rolagem" id="premio-corpo"></div>
+  <div class="folha__pe">
+    <button class="btn btn--principal" id="btn-premio-acao" style="width:100%">Receber agora</button>
   </div>
 </section>
 
@@ -1045,7 +1237,8 @@ const padrao = {
     valores: [25, 50, 100, 200],
     livre: true,
     anonimo: true,
-    fotos: [fotoExemplo("quadra"), fotoExemplo("gente")]
+    fotos: [fotoExemplo("quadra"), fotoExemplo("gente")],
+    recompensa: { ativa: false, tipo: "foto", arquivo: "", titulo: "", mensagem: "" }
   },
   rifa: {
     titulo: "Rifa da Air Fryer — churrasco do Zé",
@@ -1056,7 +1249,8 @@ const padrao = {
     sorteio: "",
     promos: [{ qtd: 3, preco: 25 }, { qtd: 5, preco: 35 }, { qtd: 10, preco: 60 }],
     restantes: true,
-    fotos: [fotoExemplo("premio"), fotoExemplo("churrasco")]
+    fotos: [fotoExemplo("premio"), fotoExemplo("churrasco")],
+    recompensa: { ativa: false, tipo: "foto", arquivo: "", titulo: "", mensagem: "" }
   },
   organizador: "",
   pix: ""
@@ -1071,6 +1265,23 @@ let resumo = { ...resumoVazio };
 let campanhaId = null;
 // quem chega pelo link é visitante: vê a campanha e nada mais
 let souDono = false;
+let campanhaEncerrada = false;
+let ganhadorDaRifa = null;
+
+// o apoio fica anotado neste aparelho para a pessoa conseguir voltar e pegar o
+// prêmio depois, sem conta nem senha
+function guardarMeuApoio(campanhaId, txid, resgate) {
+  if (!campanhaId || !txid || !resgate) return;
+  try {
+    const meus = JSON.parse(localStorage.getItem("growdy-apoios") || "{}");
+    meus[campanhaId] = { txid, resgate, quando: Date.now() };
+    localStorage.setItem("growdy-apoios", JSON.stringify(meus));
+  } catch (e) { /* sem espaço: a pessoa ainda vê o prêmio agora, só não depois */ }
+}
+function meuApoio(campanhaId) {
+  try { return (JSON.parse(localStorage.getItem("growdy-apoios") || "{}"))[campanhaId] || null; }
+  catch (e) { return null; }
+}
 
 let est = JSON.parse(JSON.stringify(padrao));
 let tipo = "doacao";
@@ -1102,7 +1313,10 @@ function carregar() {
 }
 
 /* ============ navegação entre telas ============ */
-const telas = { escolha: $("#tela-escolha"), criar: $("#tela-criar"), publica: $("#tela-publica"), fechada: $("#tela-fechada") };
+const telas = {
+  escolha: $("#tela-escolha"), criar: $("#tela-criar"), publica: $("#tela-publica"),
+  fechada: $("#tela-fechada"), painel: $("#tela-painel"),
+};
 function irPara(nome, tras) {
   const carregando = $("#carregando");
   if (carregando) carregando.hidden = true;
@@ -1115,19 +1329,72 @@ function irPara(nome, tras) {
 }
 
 /* ============ passos ============ */
+const ULTIMO_PASSO = 4;
 function montarPasso() {
   $$(".passo").forEach(p => {
     const casa = +p.dataset.passo === passo && (!p.dataset.so || p.dataset.so === tipo);
     p.hidden = !casa;
   });
-  $("#trilho-fita").style.width = (passo / 3) * 100 + "%";
-  $("#topo-passo").textContent = passo + " de 3";
+  $("#trilho-fita").style.width = (passo / ULTIMO_PASSO) * 100 + "%";
+  $("#topo-passo").textContent = passo + " de " + ULTIMO_PASSO;
   $("#topo-titulo").textContent = tipo === "doacao" ? "Nova vaquinha" : "Nova rifa";
   $("#btn-anterior").hidden = passo === 1;
-  $("#btn-proximo").textContent = passo === 3 ? "Publicar campanha" : "Continuar";
-  $("#btn-proximo").classList.toggle("btn__brilho", passo === 3);
+  $("#btn-proximo").textContent = passo === ULTIMO_PASSO ? "Publicar campanha" : "Continuar";
+  $("#btn-proximo").classList.toggle("btn__brilho", passo === ULTIMO_PASSO);
   $("#rolagem-criar").scrollTop = 0;
-  if (passo === 3) desenharResumo();
+  if (passo === 3) montarPremio();
+  if (passo === ULTIMO_PASSO) desenharResumo();
+}
+
+// o passo do prêmio muda de texto conforme a campanha: na rifa quem leva é o
+// ganhador, na vaquinha leva quem apoiou
+function montarPremio() {
+  const c = atual();
+  const r = c.recompensa || (c.recompensa = { ativa: false, tipo: "foto", arquivo: "", titulo: "", mensagem: "" });
+  $("#f-premio-ativo").classList.toggle("ligado", !!r.ativa);
+  $("#f-premio-ativo").setAttribute("aria-pressed", String(!!r.ativa));
+  $("#premio-campos").hidden = !r.ativa;
+  $("#premio-quem").textContent = tipo === "rifa"
+    ? "Só o ganhador do sorteio recebe"
+    : "Todo mundo que doar recebe";
+  $("#premio-explica").textContent = tipo === "rifa"
+    ? "Além do prêmio físico, dá para entregar uma foto ou um vídeo pelo app assim que o sorteio sair."
+    : "Uma foto ou um vídeo que a pessoa recebe pelo apoio, num botão logo depois do pagamento.";
+  $$("#premio-tipo .chip").forEach(b => b.classList.toggle("ativo", b.dataset.tipo === r.tipo));
+  $("#f-premio-titulo").value = r.titulo || "";
+  $("#f-premio-msg").value = r.mensagem || "";
+  desenharPreviaPremio();
+}
+
+// a mídia do prêmio é fechada, então nem o <img> do dono pode apontar direto
+// para ela: ou é o arquivo que ele acabou de escolher, ou vem por fetch com senha
+async function midiaComoBlob(endereco) {
+  const senha = senhaGuardada();
+  const r = await fetch(endereco, { headers: senha ? { "x-admin": senha } : {} });
+  if (!r.ok) throw new Error("não consegui abrir o arquivo");
+  return URL.createObjectURL(await r.blob());
+}
+
+async function desenharPreviaPremio() {
+  const r = atual().recompensa || {};
+  const caixa = $("#premio-previa");
+  $("#premio-arquivo-texto").textContent = r.arquivo ? "trocar arquivo" : "escolher arquivo";
+  if (!r.arquivo) { caixa.hidden = true; caixa.innerHTML = ""; return; }
+
+  caixa.hidden = false;
+  let fonte = r.previaLocal || "";
+  if (!fonte) {
+    caixa.innerHTML = '<div class="premio-legenda">abrindo o arquivo…</div>';
+    try { fonte = r.previaLocal = await midiaComoBlob(r.arquivo); }
+    catch (e) {
+      caixa.innerHTML = '<div class="premio-legenda">Arquivo já enviado (' + (r.tipo === "video" ? "vídeo" : "foto") + "). Escolha outro se quiser trocar.</div>";
+      return;
+    }
+  }
+  caixa.innerHTML = (r.tipo === "video"
+    ? '<video class="premio-previa" src="' + fonte + '" controls playsinline preload="metadata"></video>'
+    : '<img class="premio-previa" src="' + fonte + '" alt="Prévia do prêmio">') +
+    '<div class="premio-legenda">No ar. Só quem apoiar consegue abrir — nem o link direto funciona.</div>';
 }
 
 function marcarErro(idCampo, idErro, ruim) {
@@ -1149,6 +1416,13 @@ function validar() {
     return okPremio && okCota;
   }
   if (passo === 3) {
+    const r = c.recompensa || {};
+    if (!r.ativa) return true;
+    const faltaArquivo = !r.arquivo;
+    $("#erro-premio-arquivo").classList.toggle("visivel", faltaArquivo);
+    return !faltaArquivo;
+  }
+  if (passo === 4) {
     const a = marcarErro("#f-organizador", "#erro-organizador", !est.organizador.trim());
     const b = marcarErro("#f-pix", "#erro-pix", !est.pix.trim());
     return a && b;
@@ -1263,6 +1537,29 @@ async function comoDono(caminho, opcoes, jaTentou) {
     return comoDono(caminho, opcoes, true);
   }
   if (!r.ok) throw new Error((corpo && corpo.erro) || "O servidor não respondeu direito.");
+  return corpo;
+}
+
+// o prêmio sobe cru, sem base64: vídeo já é grande o bastante sem inchar 33%
+async function subirMidia(arquivo, aoAndar) {
+  let senha = senhaGuardada();
+  if (!senha) senha = await pedirSenha();
+  if (!senha) throw new Error("Sem a senha eu não consigo subir o arquivo.");
+  if (aoAndar) aoAndar("enviando");
+  let r;
+  try {
+    r = await fetch("/api/midia", {
+      method: "POST",
+      headers: { "Content-Type": arquivo.type || "application/octet-stream", "x-admin": senha },
+      body: arquivo,
+    });
+  } catch (e) {
+    throw new Error("O arquivo não subiu — a conexão caiu no meio. Tente de novo ou use um arquivo menor.");
+  }
+  let corpo = null;
+  try { corpo = await r.json(); } catch (e) { corpo = null; }
+  if (r.status === 401) { guardarSenha(""); throw new Error("Senha não confere."); }
+  if (!r.ok) throw new Error((corpo && corpo.erro) || "Não consegui subir o arquivo.");
   return corpo;
 }
 
@@ -1390,6 +1687,61 @@ function ligarInterruptor(id, aoTrocar) {
     aoTrocar(ligado); salvar();
   });
 }
+/* ============ campos do prêmio ============ */
+ligarInterruptor("#f-premio-ativo", v => {
+  atual().recompensa.ativa = v;
+  $("#premio-campos").hidden = !v;
+  if (v) desenharPreviaPremio();
+});
+$$("#premio-tipo .chip").forEach(b => b.addEventListener("click", () => {
+  const r = atual().recompensa;
+  if (r.tipo === b.dataset.tipo) return;
+  r.tipo = b.dataset.tipo;
+  // trocar de foto para vídeo invalida o arquivo que já estava lá
+  r.arquivo = ""; r.previaLocal = "";
+  $$("#premio-tipo .chip").forEach(x => x.classList.toggle("ativo", x === b));
+  $("#entrada-premio").accept = r.tipo === "video" ? "video/*" : "image/*";
+  $("#premio-limite").textContent = r.tipo === "video" ? "até 25 MB" : "até 25 MB";
+  desenharPreviaPremio(); salvar();
+}));
+$("#btn-premio-arquivo").addEventListener("click", () => $("#entrada-premio").click());
+$("#entrada-premio").addEventListener("change", async ev => {
+  const arquivo = (ev.target.files || [])[0];
+  ev.target.value = "";
+  if (!arquivo) return;
+  const r = atual().recompensa;
+  const ehVideo = (arquivo.type || "").startsWith("video");
+  if (ehVideo !== (r.tipo === "video")) {
+    aviso(r.tipo === "video" ? "Esse arquivo não é um vídeo." : "Esse arquivo não é uma foto.");
+    return;
+  }
+  if (arquivo.size > 25e6) { aviso("O arquivo tem " + (arquivo.size / 1e6).toFixed(0) + " MB. O limite é 25 MB."); return; }
+  const botao = $("#btn-premio-arquivo");
+  const antes = $("#premio-arquivo-texto").textContent;
+  $("#premio-arquivo-texto").textContent = "enviando…";
+  botao.classList.add("btn--bloqueado");
+  try {
+    if (r.previaLocal) URL.revokeObjectURL(r.previaLocal);
+    r.previaLocal = URL.createObjectURL(arquivo);
+    const d = await subirMidia(arquivo);
+    r.arquivo = d.url;
+    r.tipo = d.tipo;
+    $$("#premio-tipo .chip").forEach(x => x.classList.toggle("ativo", x.dataset.tipo === r.tipo));
+    $("#erro-premio-arquivo").classList.remove("visivel");
+    desenharPreviaPremio(); salvar();
+    aviso(d.tipo === "video" ? "Vídeo no ar" : "Foto no ar");
+  } catch (e) {
+    r.previaLocal = "";
+    aviso(e.message);
+    $("#premio-arquivo-texto").textContent = antes;
+  } finally {
+    botao.classList.remove("btn--bloqueado");
+    if (atual().recompensa.arquivo) $("#premio-arquivo-texto").textContent = "trocar arquivo";
+  }
+});
+$("#f-premio-titulo").addEventListener("input", e => { atual().recompensa.titulo = e.target.value; salvar(); });
+$("#f-premio-msg").addEventListener("input", e => { atual().recompensa.mensagem = e.target.value; salvar(); });
+
 ligarInterruptor("#f-livre", v => { est.doacao.livre = v; });
 ligarInterruptor("#f-anonimo", v => { est.doacao.anonimo = v; });
 ligarInterruptor("#f-restantes", v => { est.rifa.restantes = v; });
@@ -1429,7 +1781,12 @@ async function buscarCampanha(id) {
     livre: d.campanha.livre, anonimo: d.campanha.anonimoPermitido,
     premio: d.campanha.premio, preco: d.campanha.preco, cotas: d.campanha.cotas,
     promos: d.campanha.promos || [], sorteio: d.campanha.sorteio, restantes: d.campanha.mostrarRestantes,
+    recompensa: d.campanha.recompensa && d.campanha.recompensa.ativa
+      ? { ...d.campanha.recompensa, previaLocal: "" }
+      : { ativa: false, tipo: "foto", arquivo: "", titulo: "", mensagem: "" },
   });
+  campanhaEncerrada = !!d.campanha.encerrada;
+  ganhadorDaRifa = d.campanha.ganhador || null;
   est.organizador = d.campanha.organizador;
   est.pix = d.campanha.pix;
   resumo = d.resumo;
@@ -1552,11 +1909,13 @@ function desenharPublica(animar) {
   }
 
   desenharApoiadores(ehRifa);
+  desenharVitrinePremio(ehRifa);
 
   const btn = $("#btn-apoiar");
   const semCota = ehRifa && publicado && r.cotasRestantes <= 0;
-  btn.textContent = semCota ? "Cotas esgotadas" : (ehRifa ? "Escolher cotas" : "Doar agora");
-  btn.className = "btn btn__brilho " + (ehRifa ? "btn--ambar" : "btn--principal") + (semCota ? " btn--bloqueado" : "");
+  const fechada = publicado && campanhaEncerrada;
+  btn.textContent = fechada ? "Campanha encerrada" : semCota ? "Cotas esgotadas" : (ehRifa ? "Escolher cotas" : "Doar agora");
+  btn.className = "btn btn__brilho " + (ehRifa ? "btn--ambar" : "btn--principal") + (semCota || fechada ? " btn--bloqueado" : "");
   // visitante não tem porta para a área de criação: some o voltar e o selo
   $("#btn-editar").hidden = !souDono;
   $(".selo-exemplo").hidden = !souDono;
@@ -1602,6 +1961,35 @@ function desenharApoiadores(ehRifa) {
       caixa.classList.toggle("aberta");
       $("span:last-child", resto).textContent = caixa.classList.contains("aberta") ? "recolher" : "ver lista";
     };
+  }
+}
+
+// o que a campanha entrega além do obrigado — sem mostrar a mídia, que é fechada
+function desenharVitrinePremio(ehRifa) {
+  const r = atual().recompensa || {};
+  const caixa = $("#pub-premio");
+  const meu = campanhaId ? meuApoio(campanhaId) : null;
+  caixa.hidden = !(r.ativa && r.arquivo);
+  if (caixa.hidden) return;
+
+  $("#pub-premio-quem").textContent = ehRifa ? "o ganhador leva" : "quem apoiar leva";
+  $("#pub-premio-titulo").textContent = r.titulo || (r.tipo === "video" ? "Um vídeo exclusivo" : "Uma foto exclusiva");
+  $("#pub-premio-texto").innerHTML = (r.mensagem ? r.mensagem + " " : "") +
+    (ehRifa
+      ? "Sai junto com o sorteio, direto para quem tirar o número."
+      : "Abre na hora, num botão seu, assim que o Pix cair.");
+
+  const jaTem = $("#btn-meu-premio", caixa);
+  if (meu && !jaTem) {
+    const b = document.createElement("button");
+    b.id = "btn-meu-premio";
+    b.className = "acao acao--forte";
+    b.style.cssText = "margin-top:12px;width:100%;flex:none;padding:12px";
+    b.textContent = "Ver o meu prêmio";
+    b.addEventListener("click", () => abrirPremio(meu.txid, meu.resgate));
+    caixa.appendChild(b);
+  } else if (!meu && jaTem) {
+    jaTem.remove();
   }
 }
 
@@ -1877,7 +2265,9 @@ async function conferirPagamento() {
   if (d.resumo) resumo = d.resumo;
   if (d.status !== "PAGO") return;
   pararEspera();
-  const pago = { valor: d.valor, cotas: d.cotas, numeros: d.numeros || [] };
+  const pago = { valor: d.valor, cotas: d.cotas, numeros: d.numeros || [], txid: txidAtual, resgate: d.resgate, premio: d.premio };
+  // anota no aparelho para a pessoa voltar depois e pegar o prêmio
+  if (d.resgate) guardarMeuApoio(campanhaId, txidAtual, d.resgate);
   txidAtual = null;
   fecharFolha();
   setTimeout(() => {
@@ -1896,6 +2286,9 @@ async function conferirPagamento() {
         frase: "Pix de <b>" + brl(pago.valor) + "</b> confirmado. Guarde os números abaixo — no dia do sorteio são eles que valem por você.",
         impacto: { antes: antes.vendidas, depois: resumo.cotasVendidas, total: c.cotas, entrou: pago.cotas },
         numeros: pago.numeros,
+        premio: pago.premio && pago.premio.existe && pago.resgate
+          ? { txid: pago.txid, chave: pago.resgate, rotulo: pago.premio.liberado ? "Receber meu prêmio" : "Ver o prêmio da rifa" }
+          : null,
         botao: "Voltar para a rifa",
       });
     } else {
@@ -1909,6 +2302,9 @@ async function conferirPagamento() {
           ? "A barra subiu por sua causa. Faltam <b>" + brl(falta) + "</b> para a meta — e mandar o link para uma pessoa ajuda mais do que parece."
           : "Com a sua doação a meta foi batida: <b>" + brl(resumo.arrecadado) + "</b> no total. O que entrar daqui pra frente é o que passa do combinado.",
         impacto: { antes: antes.arrecadado, depois: resumo.arrecadado, total: c.meta, entrou: pago.valor },
+        premio: pago.premio && pago.premio.existe && pago.resgate
+          ? { txid: pago.txid, chave: pago.resgate, rotulo: "Receber meu prêmio" }
+          : null,
         botao: "Voltar para a página",
       });
     }
@@ -1996,6 +2392,10 @@ function mostrarSucesso(cfg) {
         ? '<div class="bilhetes-titulo">' + (cfg.numeros.length === 1 ? "seu número" : "seus números") + "</div>" +
           '<div class="bilhetes">' + cfg.numeros.map((n, i) => '<span class="bilhete" style="animation-delay:' + (900 + i * 70) + 'ms">' + n + "</span>").join("") + "</div>"
         : "") +
+      (cfg.premio
+        ? '<button class="btn btn--principal" data-premio style="width:100%;margin-top:18px;flex:none">' +
+          '<svg width="18" height="18"><use href="#i-presente"/></svg> ' + (cfg.premio.rotulo || "Receber meu prêmio") + "</button>"
+        : "") +
       (cfg.mostrarLink ? blocoLink() : "") +
       blocoCompartilhar() +
       '<div style="height:12px"></div>' +
@@ -2019,6 +2419,14 @@ function mostrarSucesso(cfg) {
     const formata = rifa ? (n => Math.round(n) + (Math.round(n) === 1 ? " cota" : " cotas")) : (n => brl(n));
     valorEl.textContent = formata(0);
     setTimeout(() => animarNumero(valorEl, 0, ate, formata, 1100), 420);
+  }
+
+  const botaoPremio = $("[data-premio]", corpo);
+  if (botaoPremio && cfg.premio) {
+    botaoPremio.addEventListener("click", () => {
+      fecharFolha();
+      setTimeout(() => abrirPremio(cfg.premio.txid, cfg.premio.chave), 280);
+    });
   }
 
   const zap = $("[data-zap]", corpo);
@@ -2125,7 +2533,8 @@ $$(".cartao").forEach(b => {
   });
 });
 $("#btn-voltar").addEventListener("click", () => {
-  if (passo > 1) { passo--; montarPasso(); }
+  if (passo > 1) { passo--; montarPasso(); return; }
+  if (souDono && painel) { irPara("painel", true); carregarPainel(true); }
   else irPara("escolha", true);
 });
 $("#btn-anterior").addEventListener("click", () => { if (passo > 1) { passo--; montarPasso(); } });
@@ -2145,11 +2554,19 @@ $("#btn-proximo").addEventListener("click", async () => {
         meta: c.meta, valores: c.valores, livre: c.livre, anonimo: c.anonimo,
         premio: c.premio, preco: c.preco, cotas: c.cotas, promos: c.promos,
         sorteio: c.sorteio, restantes: c.restantes,
+        recompensa: c.recompensa && c.recompensa.ativa && c.recompensa.arquivo ? {
+          ativa: true,
+          tipo: c.recompensa.tipo,
+          arquivo: c.recompensa.arquivo,
+          titulo: c.recompensa.titulo,
+          mensagem: c.recompensa.mensagem,
+        } : { ativa: false },
       }),
     });
     campanhaId = d.id;
     resumo = d.resumo;
     publicado = true;
+    painel = null; // a lista do painel envelheceu
     history.replaceState(null, "", "?c=" + campanhaId);
     salvar();
     irPara("publica");
@@ -2176,6 +2593,358 @@ $("#btn-proximo").addEventListener("click", async () => {
 });
 $("#btn-editar").addEventListener("click", () => { irPara("criar", true); montarPasso(); });
 $("#btn-apoiar").addEventListener("click", () => { tipo === "rifa" ? abrirRifa() : abrirDoacao(); });
+
+/* ============ o prêmio de quem apoiou ============ */
+let premioAberto = null;
+
+async function abrirPremio(txid, chave) {
+  premioAberto = { txid, chave, estado: null };
+  $("#premio-corpo").innerHTML = '<div class="premio-fechado"><span class="girador"></span>abrindo…</div>';
+  $("#btn-premio-acao").hidden = true;
+  abrirFolha($("#folha-premio"));
+  try {
+    const estado = await servidor("/api/premio/" + txid + "?k=" + encodeURIComponent(chave));
+    premioAberto.estado = estado;
+    desenharPremio(estado);
+  } catch (e) {
+    $("#premio-corpo").innerHTML = '<div class="premio-fechado">' + e.message + "</div>";
+  }
+}
+
+function desenharPremio(estado, midia) {
+  const corpo = $("#premio-corpo");
+  const acao = $("#btn-premio-acao");
+  const ehVideo = estado.tipo === "video";
+
+  if (!estado.existe) {
+    corpo.innerHTML = '<div class="premio-fechado">' + (estado.motivo || "Esta campanha não tem prêmio.") + "</div>";
+    acao.hidden = true;
+    return;
+  }
+
+  const cabeca =
+    '<div class="festa" style="padding:6px 0 0">' +
+      '<div class="festa__titulo" style="font-size:22px;margin-top:6px">' + estado.titulo + "</div>" +
+      (estado.mensagem ? '<p class="festa__frase" style="animation:none;opacity:1">' + estado.mensagem + "</p>" : "") +
+    "</div>";
+
+  if (midia) {
+    corpo.innerHTML = cabeca +
+      (ehVideo
+        ? '<video class="premio-midia" src="' + midia + '" controls autoplay playsinline style="margin-top:14px"></video>'
+        : '<img class="premio-midia" src="' + midia + '" alt="' + estado.titulo + '" style="margin-top:14px">') +
+      '<p class="rodape-nota" style="padding:12px 0 0">' +
+        (ehVideo ? "Toque e segure para salvar o vídeo." : "Toque e segure na imagem para salvar.") +
+      " Ele fica guardado aqui — é só voltar pelo link da campanha.</p>";
+    acao.hidden = true;
+    return;
+  }
+
+  if (estado.liberado) {
+    corpo.innerHTML = cabeca +
+      '<div class="premio-fechado" style="margin-top:14px">' +
+        '<svg width="34" height="34" style="color:var(--verde)"><use href="#i-presente"/></svg>' +
+        (ehVideo ? "Um vídeo" : "Uma foto") + " está esperando por você." +
+      "</div>";
+    acao.hidden = false;
+    acao.className = "btn btn--principal";
+    acao.textContent = "Receber agora";
+    return;
+  }
+
+  // rifa: ou o sorteio não saiu, ou saiu e foi para outro número
+  const numeros = (estado.seusNumeros || []).map(n => '<span class="bilhetinho">' + n + "</span>").join("");
+  corpo.innerHTML = cabeca +
+    '<div class="premio-fechado" style="margin-top:14px">' +
+      (estado.aguardandoSorteio
+        ? '<svg width="30" height="30" style="color:var(--ambar)"><use href="#i-relogio"/></svg>'
+        : '<svg width="30" height="30" style="color:var(--musgo-claro)"><use href="#i-sorteio"/></svg>') +
+      estado.motivo +
+    "</div>" +
+    (numeros
+      ? '<p class="rodape-nota" style="padding:14px 0 4px;text-align:left">Os seus números:</p><div class="bilhetinhos">' + numeros + "</div>"
+      : "") +
+    (estado.numeroSorteado
+      ? '<p class="rodape-nota" style="padding:12px 0 0;text-align:left">Número sorteado: <span class="premio-numero">' + estado.numeroSorteado + "</span></p>"
+      : "");
+  acao.hidden = true;
+}
+
+$("#btn-premio-acao").addEventListener("click", async () => {
+  if (!premioAberto) return;
+  const acao = $("#btn-premio-acao");
+  acao.textContent = "Abrindo…";
+  acao.classList.add("btn--bloqueado");
+  try {
+    const d = await servidor("/api/premio/" + premioAberto.txid + "/resgatar", {
+      method: "POST",
+      body: JSON.stringify({ k: premioAberto.chave }),
+    });
+    confete(d.tipo === "video" ? ["#5B3A96", "#A98BE0", "#00A15C", "#34D98A"] : null);
+    desenharPremio(d, d.midia);
+  } catch (e) {
+    aviso(e.message);
+    acao.textContent = "Receber agora";
+  } finally {
+    acao.classList.remove("btn--bloqueado");
+  }
+});
+
+/* ============ painel de quem organiza ============ */
+let painel = null;
+
+async function carregarPainel(silencioso) {
+  if (!silencioso) $("#painel-lista").innerHTML = '<div class="vazio"><span class="girador"></span></div>';
+  try {
+    painel = await comoDono("/api/painel");
+    desenharPainel();
+  } catch (e) {
+    $("#painel-lista").innerHTML = '<div class="vazio">' + e.message + "</div>";
+  }
+}
+
+function desenharPainel() {
+  if (!painel) return;
+  const t = painel.totais;
+  $("#painel-totais").innerHTML =
+    tijoloPainel(brlCurto(t.arrecadado), "arrecadado") +
+    tijoloPainel(t.apoiadores, t.apoiadores === 1 ? "apoiador" : "apoiadores") +
+    tijoloPainel(t.visitasHoje, "viram hoje");
+
+  const lista = $("#painel-lista");
+  if (!painel.campanhas.length) {
+    lista.innerHTML = '<div class="vazio">Nenhuma campanha ainda.<br>A primeira leva três minutos.</div>';
+    return;
+  }
+
+  lista.innerHTML = painel.campanhas.map((c, i) => {
+    const ehRifa = c.tipo === "rifa";
+    const pct = ehRifa
+      ? (c.cotas > 0 ? Math.min(100, (c.resumo.cotasVendidas / c.cotas) * 100) : 0)
+      : (c.meta > 0 ? Math.min(100, (c.resumo.arrecadado / c.meta) * 100) : 0);
+    const capa = c.capa
+      ? '<img class="cc-capa" src="' + c.capa + '" alt="">'
+      : '<div class="cc-capa cc-capa--vazia"><svg width="20" height="20"><use href="#i-camera"/></svg></div>';
+    const selos =
+      '<span class="selo' + (ehRifa ? " selo--rifa" : "") + '">' + (ehRifa ? "rifa" : "vaquinha") + "</span>" +
+      (c.recompensa.ativa ? '<span class="selo selo--premio">prêmio</span>' : "") +
+      (c.ganhador ? '<span class="selo selo--ganhador">nº ' + c.ganhador.numero + "</span>" : "") +
+      (c.encerrada ? '<span class="selo selo--fim">encerrada</span>' : "");
+    const numeros = ehRifa
+      ? "<span><b>" + c.resumo.cotasVendidas + "</b> de " + c.cotas + " cotas</span><span><b>" + brlCurto(c.resumo.arrecadado) + "</b></span>"
+      : "<span><b>" + brlCurto(c.resumo.arrecadado) + "</b> de " + brlCurto(c.meta) + "</span><span><b>" + c.resumo.apoiadores + "</b> " + (c.resumo.apoiadores === 1 ? "apoio" : "apoios") + "</span>";
+
+    return '<div class="cartao-campanha' + (ehRifa ? " cartao-campanha--rifa" : "") + (c.encerrada ? " cartao-campanha--fim" : "") +
+      '" style="animation-delay:' + (i * 55) + 'ms">' +
+      '<div class="cc-topo">' + capa +
+        '<div style="min-width:0;flex:1"><div class="cc-nome">' + c.titulo + '</div><div class="cc-selos">' + selos + "</div></div>" +
+      "</div>" +
+      '<div class="cc-barra"><div class="cc-barra__fita" style="width:' + pct.toFixed(1) + '%"></div></div>' +
+      '<div class="cc-numeros">' + numeros +
+        '<span style="margin-left:auto"><svg width="13" height="13" style="vertical-align:-2px;color:var(--musgo-claro)"><use href="#i-olho"/></svg> <b>' +
+        c.visitas.hoje + "</b> hoje · " + c.visitas.total + " no total</span>" +
+      "</div>" +
+      '<div class="cc-acoes">' +
+        '<button class="acao acao--forte" data-abrir="' + c.id + '">Detalhes</button>' +
+        '<button class="acao" data-ver="' + c.id + '">Ver página</button>' +
+        '<button class="acao" data-link="' + c.id + '">Copiar link</button>' +
+      "</div></div>";
+  }).join("");
+
+  $$("[data-abrir]", lista).forEach(b => b.addEventListener("click", () => abrirDetalhe(b.dataset.abrir)));
+  $$("[data-ver]", lista).forEach(b => b.addEventListener("click", () => irParaCampanha(b.dataset.ver)));
+  $$("[data-link]", lista).forEach(b => b.addEventListener("click", () => copiarLink(b.dataset.link)));
+}
+
+const tijoloPainel = (num, rot) =>
+  '<div class="painel-tijolo"><div class="painel-tijolo__num">' + num + '</div><div class="painel-tijolo__rot">' + rot + "</div></div>";
+
+function copiarLink(id) {
+  const endereco = location.origin + "/?c=" + id;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(endereco).then(() => aviso("Link copiado")).catch(() => aviso(endereco));
+  } else aviso(endereco);
+}
+
+async function irParaCampanha(id) {
+  fecharFolha();
+  try {
+    await buscarCampanha(id);
+    sincronizarCampos();
+    history.replaceState(null, "", "?c=" + id);
+    desenharPublica(true);
+    irPara("publica");
+  } catch (e) { aviso(e.message); }
+}
+
+async function abrirDetalhe(id) {
+  $("#detalhe-corpo").innerHTML = '<div class="premio-fechado"><span class="girador"></span>abrindo…</div>';
+  abrirFolha($("#folha-campanha"));
+  let d;
+  try { d = await comoDono("/api/campanhas/" + id + "/detalhe"); }
+  catch (e) { $("#detalhe-corpo").innerHTML = '<div class="vazio">' + e.message + "</div>"; return; }
+
+  const c = d.campanha, ehRifa = c.tipo === "rifa";
+  $("#detalhe-titulo").textContent = c.titulo;
+  $("#btn-detalhe-ver").onclick = () => irParaCampanha(id);
+
+  const linhas = d.apoios.length
+    ? d.apoios.map(a =>
+        '<div class="apoio"><span class="avatar" style="' + (ehRifa ? "background:linear-gradient(145deg,#F0B45F,#E2891B)" : "") + '">' +
+        (a.nome || "?").charAt(0).toUpperCase() + "</span>" +
+        '<span style="min-width:0"><span class="apoiador__nome">' + a.nome + (a.demo ? " ·" : "") + "</span>" +
+        (a.msg ? '<span class="apoiador__msg">' + a.msg + "</span>" : "") +
+        '<span class="apoio__quando">' + quando(a.pagaEm) + (a.resgatadoEm ? " · prêmio retirado" : "") + "</span>" +
+        (a.numeros.length ? '<span class="bilhetinhos">' + a.numeros.map(n => '<span class="bilhetinho">' + n + "</span>").join("") + "</span>" : "") +
+        "</span>" +
+        '<span class="apoio__num" style="' + (ehRifa ? "color:var(--ambar-esc)" : "") + '">' +
+        (ehRifa ? a.cotas + (a.cotas === 1 ? " cota" : " cotas") + "<br>" : "") + brl(a.valor) + "</span></div>")
+      .join("")
+    : '<div class="vazio">Ninguém apoiou ainda.</div>';
+
+  const sorteio = ehRifa
+    ? (c.ganhador
+      ? '<div class="painel painel--rifa" style="margin-top:14px"><h3>Ganhador</h3>' +
+        '<div style="display:flex;align-items:center;gap:10px;margin-top:8px">' +
+        '<span class="premio-numero">' + c.ganhador.numero + "</span>" +
+        '<span><span class="apoiador__nome">' + c.ganhador.nome + "</span>" +
+        '<span class="apoio__quando">entre ' + c.ganhador.entreBolas + " cotas · " + quando(c.ganhador.quando) + "</span></span></div>" +
+        (c.ganhador.contato ? '<p class="rodape-nota" style="padding:10px 0 0;text-align:left">Contato: ' + c.ganhador.contato + "</p>" : "") +
+        "</div>"
+      : '<button class="acao acao--ambar" id="btn-sortear" style="width:100%;margin-top:14px;padding:14px">Sortear o ganhador agora</button>')
+    : "";
+
+  $("#detalhe-corpo").innerHTML =
+    '<div class="painel-resumo" style="margin-top:2px">' +
+      tijoloPainel(brlCurto(d.resumo.arrecadado), "arrecadado") +
+      tijoloPainel(d.resumo.apoiadores, "apoios") +
+      tijoloPainel(d.visitas.total, "visitas") +
+    "</div>" +
+    '<div class="cc-numeros" style="margin-top:10px"><span><svg width="13" height="13" style="vertical-align:-2px"><use href="#i-olho"/></svg> <b>' +
+      d.visitas.hoje + "</b> pessoas hoje (" + d.visitas.hojeVistas + " aberturas)</span>" +
+      (d.aguardando ? "<span style='margin-left:auto'>" + d.aguardando + " Pix aguardando</span>" : "") + "</div>" +
+    sorteio +
+    '<div class="secao__titulo" style="margin:18px 0 2px">Quem apoiou</div>' +
+    '<div class="caixa-lista" style="max-height:320px">' + linhas + "</div>" +
+    '<div class="cc-acoes" style="margin-top:16px">' +
+      '<button class="acao" data-copiar-link="' + id + '">Copiar link</button>' +
+      '<button class="acao acao--fraca" id="btn-encerrar">' + (c.encerrada ? "Reabrir campanha" : "Encerrar campanha") + "</button>" +
+    "</div><div style='height:8px'></div>";
+
+  const btnSortear = $("#btn-sortear");
+  if (btnSortear) btnSortear.addEventListener("click", () => sortear(id, btnSortear));
+  $$("[data-copiar-link]", $("#detalhe-corpo")).forEach(b => b.addEventListener("click", () => copiarLink(id)));
+  $("#btn-encerrar").addEventListener("click", async () => {
+    try {
+      const r = await comoDono("/api/campanhas/" + id + "/encerrar", {
+        method: "POST",
+        body: JSON.stringify({ encerrada: !c.encerrada }),
+      });
+      aviso(r.encerrada ? "Campanha encerrada" : "Campanha reaberta");
+      await carregarPainel(true);
+      abrirDetalhe(id);
+    } catch (e) { aviso(e.message); }
+  });
+}
+
+async function sortear(id, botao) {
+  botao.textContent = "Girando…";
+  botao.classList.add("btn--bloqueado");
+  try {
+    const d = await comoDono("/api/campanhas/" + id + "/sortear", { method: "POST" });
+    confete(["#E2891B", "#F7C46C", "#00A15C", "#FFE9C6"]);
+    aviso("Número " + d.ganhador.numero + " — " + d.ganhador.nome);
+    await carregarPainel(true);
+    abrirDetalhe(id);
+  } catch (e) {
+    aviso(e.message);
+    botao.textContent = "Sortear o ganhador agora";
+    botao.classList.remove("btn--bloqueado");
+  }
+}
+
+function quando(ts) {
+  if (!ts) return "";
+  const minutos = Math.round((Date.now() - ts) / 60000);
+  if (minutos < 1) return "agora";
+  if (minutos < 60) return "há " + minutos + " min";
+  const horas = Math.round(minutos / 60);
+  if (horas < 24) return "há " + horas + "h";
+  const dias = Math.round(horas / 24);
+  if (dias < 30) return "há " + dias + (dias === 1 ? " dia" : " dias");
+  return new Date(ts).toLocaleDateString("pt-BR");
+}
+
+$("#btn-atualizar-painel").addEventListener("click", () => carregarPainel());
+$("#btn-nova-campanha").addEventListener("click", () => {
+  campanhaId = null; publicado = false; resumo = { ...resumoVazio };
+  irPara("escolha");
+});
+
+/* ============ notificações no celular ============ */
+async function estadoDoSino() {
+  const texto = $("#sino-texto"), sub = $("#sino-sub"), sino = $("#btn-sino");
+  if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
+    sino.classList.remove("ligado");
+    texto.textContent = "Notificações não cabem neste navegador";
+    sub.textContent = "No iPhone: toque em Compartilhar > Adicionar à Tela de Início e abra por lá.";
+    return;
+  }
+  try {
+    const reg = await navigator.serviceWorker.getRegistration();
+    const inscricao = reg && await reg.pushManager.getSubscription();
+    if (inscricao && Notification.permission === "granted") {
+      sino.classList.add("ligado");
+      texto.textContent = "Avisos ligados neste aparelho";
+      sub.textContent = "Cada Pix que cair chega aqui. Toque para enviar um teste.";
+      return;
+    }
+  } catch (e) { /* segue mostrando o convite */ }
+  sino.classList.remove("ligado");
+  texto.textContent = "Receber aviso de cada apoio";
+  sub.textContent = Notification.permission === "denied"
+    ? "O navegador bloqueou. Libere as notificações nos ajustes do site."
+    : "Toque para ligar as notificações neste aparelho";
+}
+
+$("#btn-sino").addEventListener("click", async () => {
+  const sino = $("#btn-sino");
+  if (sino.classList.contains("ligado")) {
+    try { await comoDono("/api/push/teste", { method: "POST" }); aviso("Teste enviado"); }
+    catch (e) { aviso(e.message); }
+    return;
+  }
+  if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
+    aviso("Este navegador não faz notificação. No iPhone, instale o app na tela de início.");
+    return;
+  }
+  try {
+    const { ligado, chave } = await servidor("/api/push/chave");
+    if (!ligado || !chave) { aviso("Faltam as chaves VAPID no servidor."); return; }
+    const permissao = await Notification.requestPermission();
+    if (permissao !== "granted") { aviso("Sem permissão, não dá para avisar."); estadoDoSino(); return; }
+    const reg = await navigator.serviceWorker.register("/sw.js");
+    await navigator.serviceWorker.ready;
+    const inscricao = await reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: base64ParaBytes(chave),
+    });
+    await comoDono("/api/push/inscrever", { method: "POST", body: JSON.stringify(inscricao.toJSON()) });
+    aviso("Pronto, agora você fica sabendo na hora");
+    estadoDoSino();
+  } catch (e) {
+    aviso("Não consegui ligar: " + e.message);
+  }
+});
+
+// a chave VAPID vem em base64url e o navegador quer bytes
+function base64ParaBytes(base64) {
+  const completo = (base64 + "=".repeat((4 - (base64.length % 4)) % 4)).replace(/-/g, "+").replace(/_/g, "/");
+  const cru = atob(completo);
+  const bytes = new Uint8Array(cru.length);
+  for (let i = 0; i < cru.length; i++) bytes[i] = cru.charCodeAt(i);
+  return bytes;
+}
 
 /* ============ início ============ */
 // o servidor diz se esta pessoa é dona da casa; sem senha guardada, é visitante
@@ -2206,28 +2975,48 @@ async function entrarComoDono() {
 async function comecar() {
   carregar();
   const parametros = new URLSearchParams(location.search);
-  if (parametros.has("admin")) await entrarComoDono();
+  if (parametros.has("admin") || parametros.has("painel")) await entrarComoDono();
   else await conferirQuemSou();
-  const id = new URLSearchParams(location.search).get("c");
+
+  const id = parametros.get("c");
   if (id) {
     try {
       await buscarCampanha(id);
       sincronizarCampos();
       desenharPublica(true);
       irPara("publica");
+      if (!souDono) marcarVisita(id);
       return;
     } catch (e) {
       // link errado na mão de visitante não vira convite para criar campanha
       if (!souDono) { irPara("fechada"); return; }
-      aviso("Não achei essa campanha. Comece uma nova.");
+      aviso("Não achei essa campanha.");
     }
   }
+
   if (!souDono) { irPara("fechada"); return; }
+
+  // a casa de quem organiza é o painel
   sincronizarCampos();
   montarPasso();
-  desenharPublica(false);
-  irPara("escolha");
+  irPara("painel");
+  estadoDoSino();
+  await carregarPainel();
+
+  // notificação tocada abre direto a campanha que ela citava
+  const doPainel = parametros.get("painel");
+  if (doPainel && doPainel !== "1") abrirDetalhe(doPainel);
+  if (parametros.has("painel")) history.replaceState(null, "", location.pathname);
 }
+
+function marcarVisita(id) {
+  fetch("/api/visitas", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ campanhaId: id }),
+  }).catch(() => { /* contador não é motivo para atrapalhar quem vai doar */ });
+}
+
 comecar();
 
 // enquanto a página pública estiver aberta, os números se atualizam sozinhos

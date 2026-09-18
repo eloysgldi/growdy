@@ -23,7 +23,7 @@ export const naNuvem = !!(ENDERECO && CHAVE);
 
 const absoluto = c => c.startsWith('/') || /^[A-Za-z]:/.test(c);
 let PASTA = env.DADOS_DIR ? (absoluto(env.DADOS_DIR) ? env.DADOS_DIR : join(raiz, env.DADOS_DIR)) : join(raiz, 'dados');
-let PASTA_FOTOS = join(PASTA, 'fotos');
+let PASTA_FOTOS = join(PASTA, 'fotos'); // usada no teste de escrita da subida
 let discoOk = true;
 let motivoDisco = '';
 
@@ -106,28 +106,33 @@ export async function gravarDados(dados) {
   await writeFile(join(PASTA, 'dados.json'), texto, 'utf8');
 }
 
-export async function guardarFoto(nome, bytes, tipo) {
+// pasta e 'fotos' (capa da campanha) ou 'midia' (premio em foto ou video)
+export async function guardarArquivo(pasta, nome, bytes, tipo) {
   if (naNuvem) {
-    await nuvemGravar('fotos/' + nome, bytes, tipo);
-    return '/fotos/' + nome;
+    await nuvemGravar(pasta + '/' + nome, bytes, tipo);
+    return '/' + pasta + '/' + nome;
   }
-  await mkdir(PASTA_FOTOS, { recursive: true });
-  await writeFile(join(PASTA_FOTOS, nome), bytes);
-  return '/fotos/' + nome;
+  const destino = join(PASTA, pasta);
+  await mkdir(destino, { recursive: true });
+  await writeFile(join(destino, nome), bytes);
+  return '/' + pasta + '/' + nome;
 }
 
-// guarda as ultimas fotos em memoria para nao buscar na nuvem a cada visita
-const lembradas = new Map();
-const LIMITE_LEMBRADAS = 24;
+// guarda os ultimos arquivos pequenos em memoria para nao buscar na nuvem a cada
+// visita; video fica de fora porque nao vale o espaco
+const lembrados = new Map();
+const LIMITE_LEMBRADOS = 24;
+const CABE_NA_MEMORIA = 2.5e6;
 
-export async function lerFoto(nome) {
-  if (lembradas.has(nome)) return lembradas.get(nome);
+export async function lerArquivo(pasta, nome) {
+  const chave = pasta + '/' + nome;
+  if (lembrados.has(chave)) return lembrados.get(chave);
   let bytes = null;
-  if (naNuvem) bytes = await nuvemBaixar('fotos/' + nome);
-  else bytes = await readFile(join(PASTA_FOTOS, nome)).catch(() => null);
-  if (bytes) {
-    if (lembradas.size >= LIMITE_LEMBRADAS) lembradas.delete(lembradas.keys().next().value);
-    lembradas.set(nome, bytes);
+  if (naNuvem) bytes = await nuvemBaixar(chave);
+  else bytes = await readFile(join(PASTA, pasta, nome)).catch(() => null);
+  if (bytes && bytes.length <= CABE_NA_MEMORIA) {
+    if (lembrados.size >= LIMITE_LEMBRADOS) lembrados.delete(lembrados.keys().next().value);
+    lembrados.set(chave, bytes);
   }
   return bytes;
 }
