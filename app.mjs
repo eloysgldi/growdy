@@ -16,9 +16,31 @@ const raiz = dirname(fileURLToPath(import.meta.url));
 const PORTA = Number(env.PORT || 4180);
 // no Render isto aponta para o disco persistente (ex.: /var/data)
 const absoluto = c => c.startsWith('/') || /^[A-Za-z]:/.test(c);
-const PASTA_DADOS = env.DADOS_DIR ? (absoluto(env.DADOS_DIR) ? env.DADOS_DIR : join(raiz, env.DADOS_DIR)) : join(raiz, 'dados');
-const PASTA_FOTOS = join(PASTA_DADOS, 'fotos');
-const ARQUIVO = join(PASTA_DADOS, 'dados.json');
+let PASTA_DADOS = env.DADOS_DIR ? (absoluto(env.DADOS_DIR) ? env.DADOS_DIR : join(raiz, env.DADOS_DIR)) : join(raiz, 'dados');
+let PASTA_FOTOS = join(PASTA_DADOS, 'fotos');
+let ARQUIVO = join(PASTA_DADOS, 'dados.json');
+let disco = { persistente: true, motivo: '' };
+
+// se a pasta configurada não aceitar escrita (disco esquecido no Render, por
+// exemplo), o app continua de pé numa pasta temporária e diz isso alto
+async function prepararPasta() {
+  try {
+    await mkdir(PASTA_FOTOS, { recursive: true });
+    const teste = join(PASTA_DADOS, '.escrita');
+    await writeFile(teste, 'ok');
+  } catch (e) {
+    const alternativa = join(raiz, 'dados');
+    disco = { persistente: false, motivo: `${PASTA_DADOS} recusou escrita (${e.code || e.message})` };
+    console.error('\n  [ATENCAO] nao consigo gravar em ' + PASTA_DADOS + ' (' + (e.code || e.message) + ')');
+    console.error('  No Render isso quase sempre e o disco que falta:');
+    console.error('  Settings > Disks > Add Disk, Mount Path /var/data, 1 GB.');
+    console.error('  Seguindo com ' + alternativa + ' — o que for gravado some no proximo deploy.\n');
+    PASTA_DADOS = alternativa;
+    PASTA_FOTOS = join(PASTA_DADOS, 'fotos');
+    ARQUIVO = join(PASTA_DADOS, 'dados.json');
+    try { await mkdir(PASTA_FOTOS, { recursive: true }); } catch (e2) { /* nem isso: segue em memória */ }
+  }
+}
 const SENHA = env.ADMIN_SENHA || '';
 
 const TIPOS = {
@@ -231,8 +253,9 @@ async function api(req, res, url) {
 
   // saúde da integração: só pede token, não cria cobrança nem move dinheiro
   if (p === '/api/saude' && req.method === 'GET') {
-    try { await tokenCashIn(); return json(res, 200, { ok: true, bass: 'autenticado', chave: env.BASS_CHAVE_PIX }); }
-    catch (e) { return json(res, 200, { ok: false, erro: e.message }); }
+    const dados = { pasta: PASTA_DADOS, persistente: disco.persistente, motivo: disco.motivo || undefined };
+    try { await tokenCashIn(); return json(res, 200, { ok: true, bass: 'autenticado', chave: env.BASS_CHAVE_PIX, dados }); }
+    catch (e) { return json(res, 200, { ok: false, erro: e.message, dados }); }
   }
 
   // sobe uma foto e devolve a URL dela; só o dono da casa sobe foto
@@ -245,8 +268,13 @@ async function api(req, res, url) {
     if (bytes.length > 4e6) return json(res, 413, { erro: 'Imagem grande demais (limite de 4 MB).' });
     const ext = casa[1] === 'png' ? '.png' : casa[1] === 'webp' ? '.webp' : '.jpg';
     const nome = randomUUID() + ext;
-    await mkdir(PASTA_FOTOS, { recursive: true });
-    await writeFile(join(PASTA_FOTOS, nome), bytes);
+    try {
+      await mkdir(PASTA_FOTOS, { recursive: true });
+      await writeFile(join(PASTA_FOTOS, nome), bytes);
+    } catch (e) {
+      console.error('[fotos] falha ao gravar em ' + PASTA_FOTOS + ':', e.message);
+      return json(res, 500, { erro: 'Não consegui gravar a foto em ' + PASTA_FOTOS + ' (' + (e.code || e.message) + '). No Render, confira se o disco está criado em Settings > Disks com o caminho /var/data.' });
+    }
     return json(res, 201, { url: '/fotos/' + nome });
   }
 
@@ -399,7 +427,7 @@ async function api(req, res, url) {
   return json(res, 404, { erro: 'Rota inexistente.' });
 }
 
-createServer(async (req, res) => {
+const servidor = createServer(async (req, res) => {
   const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
   try {
     if (url.pathname.startsWith('/api/')) return await api(req, res, url);
@@ -427,13 +455,17 @@ createServer(async (req, res) => {
     console.error('[erro]', e);
     if (!res.headersSent) json(res, 500, { erro: 'Algo quebrou aqui do lado.' });
   }
-}).listen(PORTA, () => {
+});
+
+await prepararPasta();
+
+servidor.listen(PORTA, () => {
   const ips = Object.values(networkInterfaces()).flat()
     .filter(i => i && i.family === 'IPv4' && !i.internal).map(i => i.address);
   console.log('\n  Growdy no ar');
   console.log(`  aqui       http://localhost:${PORTA}`);
   ips.forEach(ip => console.log(`  no celular http://${ip}:${PORTA}  (mesma rede wi-fi)`));
-  console.log(`  dados em   ${PASTA_DADOS}`);
+  console.log(`  dados em   ${PASTA_DADOS}` + (disco.persistente ? '' : '  (TEMPORARIO — falta o disco)'));
   console.log(SENHA ? '  criação    protegida por ADMIN_SENHA' : '  criação    ABERTA — defina ADMIN_SENHA antes de subir para a internet');
   console.log('');
 });
