@@ -200,10 +200,22 @@ const json = (res, status, corpo) => {
   res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
   res.end(texto);
 };
+// Cortar a conexão no meio (req.destroy) faz o navegador dizer só "Load failed".
+// Então, quando passa do limite, o corpo é descartado mas a leitura continua até
+// o fim, para dar tempo de responder um 413 que a pessoa consiga entender.
+const LIMITE_CORPO = 12e6;
 const corpoDe = req => new Promise((resolve, reject) => {
   let d = '';
-  req.on('data', p => { d += p; if (d.length > 12e6) { reject(new Error('corpo grande demais')); req.destroy(); } });
-  req.on('end', () => { try { resolve(d ? JSON.parse(d) : {}); } catch { reject(new Error('JSON inválido')); } });
+  let grande = false;
+  req.on('data', p => {
+    if (grande) return;
+    d += p;
+    if (d.length > LIMITE_CORPO) { grande = true; d = ''; }
+  });
+  req.on('end', () => {
+    if (grande) return reject(Object.assign(new Error('corpo grande demais'), { status: 413 }));
+    try { resolve(d ? JSON.parse(d) : {}); } catch { reject(Object.assign(new Error('JSON inválido'), { status: 400 })); }
+  });
   req.on('error', reject);
 });
 
@@ -430,8 +442,15 @@ const servidor = createServer(async (req, res) => {
     res.end(buf);
   } catch (e) {
     if (e?.code === 'ENOENT') { res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' }).end('não encontrado'); return; }
-    console.error('[erro]', e);
-    if (!res.headersSent) json(res, 500, { erro: 'Algo quebrou aqui do lado.' });
+    const status = e?.status || 500;
+    if (status === 500) console.error('[erro]', e);
+    if (!res.headersSent) {
+      json(res, status, {
+        erro: status === 413 ? 'A imagem é grande demais. Escolha uma foto menor.'
+          : status === 400 ? 'O pedido chegou quebrado.'
+            : 'Algo quebrou aqui do lado.',
+      });
+    }
   }
 });
 
