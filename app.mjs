@@ -5,42 +5,16 @@
 // Quem cria campanha precisa da senha (ADMIN_SENHA).
 // Quem recebe o link só abre e paga — sem cadastro, sem login, sem nada.
 import { createServer } from 'node:http';
-import { readFile, writeFile, mkdir } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
 import { join, extname, dirname, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { networkInterfaces } from 'node:os';
 import { randomUUID, timingSafeEqual } from 'node:crypto';
 import { env, tokenCashIn, criarCobranca, consultarCobranca, novoTxid } from './bass.mjs';
+import { prepararDisco, lerDados, gravarDados, guardarFoto, lerFoto, descreverArmazem, tocarArmazem } from './armazem.mjs';
 
 const raiz = dirname(fileURLToPath(import.meta.url));
 const PORTA = Number(env.PORT || 4180);
-// no Render isto aponta para o disco persistente (ex.: /var/data)
-const absoluto = c => c.startsWith('/') || /^[A-Za-z]:/.test(c);
-let PASTA_DADOS = env.DADOS_DIR ? (absoluto(env.DADOS_DIR) ? env.DADOS_DIR : join(raiz, env.DADOS_DIR)) : join(raiz, 'dados');
-let PASTA_FOTOS = join(PASTA_DADOS, 'fotos');
-let ARQUIVO = join(PASTA_DADOS, 'dados.json');
-let disco = { persistente: true, motivo: '' };
-
-// se a pasta configurada não aceitar escrita (disco esquecido no Render, por
-// exemplo), o app continua de pé numa pasta temporária e diz isso alto
-async function prepararPasta() {
-  try {
-    await mkdir(PASTA_FOTOS, { recursive: true });
-    const teste = join(PASTA_DADOS, '.escrita');
-    await writeFile(teste, 'ok');
-  } catch (e) {
-    const alternativa = join(raiz, 'dados');
-    disco = { persistente: false, motivo: `${PASTA_DADOS} recusou escrita (${e.code || e.message})` };
-    console.error('\n  [ATENCAO] nao consigo gravar em ' + PASTA_DADOS + ' (' + (e.code || e.message) + ')');
-    console.error('  No Render isso quase sempre e o disco que falta:');
-    console.error('  Settings > Disks > Add Disk, Mount Path /var/data, 1 GB.');
-    console.error('  Seguindo com ' + alternativa + ' — o que for gravado some no proximo deploy.\n');
-    PASTA_DADOS = alternativa;
-    PASTA_FOTOS = join(PASTA_DADOS, 'fotos');
-    ARQUIVO = join(PASTA_DADOS, 'dados.json');
-    try { await mkdir(PASTA_FOTOS, { recursive: true }); } catch (e2) { /* nem isso: segue em memória */ }
-  }
-}
 const SENHA = env.ADMIN_SENHA || '';
 
 const TIPOS = {
@@ -55,16 +29,13 @@ let gravando = Promise.resolve();
 
 async function ler() {
   if (cache) return cache;
-  try { cache = JSON.parse(await readFile(ARQUIVO, 'utf8')); }
-  catch { cache = { campanhas: {}, contribuicoes: [] }; }
+  cache = await lerDados();
   return cache;
 }
 function gravar() {
   // serializa as gravações para dois pedidos simultâneos não se atropelarem
-  gravando = gravando.then(async () => {
-    await mkdir(PASTA_DADOS, { recursive: true });
-    await writeFile(ARQUIVO, JSON.stringify(cache, null, 2), 'utf8');
-  }).catch(e => console.error('[dados] falha ao gravar:', e.message));
+  gravando = gravando.then(() => gravarDados(cache))
+    .catch(e => console.error('[dados] falha ao gravar:', e.message));
   return gravando;
 }
 
@@ -248,12 +219,13 @@ async function api(req, res, url) {
   // batida de coração para o serviço não hibernar; de propósito não fala com
   // a BassPago nem lê disco — é só para manter a máquina acordada
   if (p === '/api/ping') {
-    return json(res, 200, { ok: true, agora: new Date().toISOString() });
+    const tocou = await tocarArmazem().catch(() => false);
+    return json(res, 200, { ok: true, agora: new Date().toISOString(), armazem: tocou ? 'acordado' : undefined });
   }
 
   // saúde da integração: só pede token, não cria cobrança nem move dinheiro
   if (p === '/api/saude' && req.method === 'GET') {
-    const dados = { pasta: PASTA_DADOS, persistente: disco.persistente, motivo: disco.motivo || undefined };
+    const dados = descreverArmazem();
     try { await tokenCashIn(); return json(res, 200, { ok: true, bass: 'autenticado', chave: env.BASS_CHAVE_PIX, dados }); }
     catch (e) { return json(res, 200, { ok: false, erro: e.message, dados }); }
   }
@@ -269,13 +241,18 @@ async function api(req, res, url) {
     const ext = casa[1] === 'png' ? '.png' : casa[1] === 'webp' ? '.webp' : '.jpg';
     const nome = randomUUID() + ext;
     try {
-      await mkdir(PASTA_FOTOS, { recursive: true });
-      await writeFile(join(PASTA_FOTOS, nome), bytes);
+      const url = await guardarFoto(nome, bytes, 'image/' + (casa[1] === 'jpg' ? 'jpeg' : casa[1]));
+      return json(res, 201, { url });
     } catch (e) {
-      console.error('[fotos] falha ao gravar em ' + PASTA_FOTOS + ':', e.message);
-      return json(res, 500, { erro: 'Não consegui gravar a foto em ' + PASTA_FOTOS + ' (' + (e.code || e.message) + '). No Render, confira se o disco está criado em Settings > Disks com o caminho /var/data.' });
+      console.error('[fotos] falha ao guardar:', e.message);
+      const onde = descreverArmazem();
+      return json(res, 500, {
+        erro: 'Não consegui guardar a foto (' + (e.code || e.message) + '). ' +
+          (onde.tipo === 'supabase'
+            ? 'Confira SUPABASE_URL, SUPABASE_CHAVE e se o balde "' + onde.balde + '" existe.'
+            : 'No Render sem disco, configure o Supabase (grátis) ou crie o disco em Settings > Disks.'),
+      });
     }
-    return json(res, 201, { url: '/fotos/' + nome });
   }
 
   // publica uma campanha (ou atualiza a mesma pelo id)
@@ -432,11 +409,12 @@ const servidor = createServer(async (req, res) => {
   try {
     if (url.pathname.startsWith('/api/')) return await api(req, res, url);
 
-    // fotos enviadas por quem cria a campanha
+    // fotos enviadas por quem cria a campanha (do disco ou do Supabase)
     if (url.pathname.startsWith('/fotos/')) {
-      const alvo = join(PASTA_FOTOS, basename(url.pathname));
-      const buf = await readFile(alvo);
-      res.writeHead(200, { 'Content-Type': TIPOS[extname(alvo)] || 'application/octet-stream', 'Cache-Control': 'public, max-age=86400' });
+      const nome = basename(url.pathname);
+      const buf = await lerFoto(nome);
+      if (!buf) { res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' }).end('foto não encontrada'); return; }
+      res.writeHead(200, { 'Content-Type': TIPOS[extname(nome)] || 'application/octet-stream', 'Cache-Control': 'public, max-age=86400' });
       res.end(buf);
       return;
     }
@@ -457,15 +435,17 @@ const servidor = createServer(async (req, res) => {
   }
 });
 
-await prepararPasta();
+await prepararDisco();
 
 servidor.listen(PORTA, () => {
   const ips = Object.values(networkInterfaces()).flat()
     .filter(i => i && i.family === 'IPv4' && !i.internal).map(i => i.address);
+  const onde = descreverArmazem();
   console.log('\n  Growdy no ar');
   console.log(`  aqui       http://localhost:${PORTA}`);
   ips.forEach(ip => console.log(`  no celular http://${ip}:${PORTA}  (mesma rede wi-fi)`));
-  console.log(`  dados em   ${PASTA_DADOS}` + (disco.persistente ? '' : '  (TEMPORARIO — falta o disco)'));
+  console.log(`  dados em   ${onde.tipo === 'supabase' ? 'Supabase, balde ' + onde.balde : onde.pasta}` +
+    (onde.persistente ? '' : '  (TEMPORARIO — nada sobrevive ao proximo deploy)'));
   console.log(SENHA ? '  criação    protegida por ADMIN_SENHA' : '  criação    ABERTA — defina ADMIN_SENHA antes de subir para a internet');
   console.log('');
 });
