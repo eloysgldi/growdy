@@ -1,12 +1,7 @@
 // Popula o banco do protótipo com duas campanhas de demonstração já cheias:
 // uma vaquinha perto da meta e uma rifa quase esgotada. Rode com: node semear.mjs
-// Só mexe em dados/dados.json — não fala com a BassPago e não move dinheiro.
-import { readFile, writeFile, mkdir } from 'node:fs/promises';
-import { join, dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
-
-const raiz = dirname(fileURLToPath(import.meta.url));
-const ARQUIVO = join(raiz, 'dados', 'dados.json');
+// Grava onde o app grava: Supabase quando configurado, disco quando nao.
+import { lerDados, gravarDados, prepararDisco, descreverArmazem } from './armazem.mjs';
 
 const NOMES = ['Marina S.', 'Cleber A.', 'Dona Zélia', 'Beto do mercado', 'Paula R.', 'Seu Nilton', 'Tia Rosa',
   'Juliana M.', 'Rafael T.', 'Camila O.', 'Vanderlei', 'Bruna L.', 'Seu Zé', 'Débora F.', 'Anderson P.',
@@ -155,8 +150,10 @@ function historico(campanha) {
   return saida;
 }
 
-const db = await readFile(ARQUIVO, 'utf8').then(JSON.parse).catch(() => ({ campanhas: {}, contribuicoes: [] }));
+await prepararDisco();
+const db = await lerDados();
 const refazer = process.argv.includes('--refazer');
+console.log('\n  guardando em: ' + JSON.stringify(descreverArmazem()) + '\n');
 
 for (const campanha of CAMPANHAS) {
   const jaTem = db.contribuicoes.some(c => c.campanhaId === campanha.id);
@@ -178,8 +175,8 @@ for (const campanha of CAMPANHAS) {
       : ` · ${Math.round(soma / campanha.meta * 100)}% da meta`));
 }
 
-await mkdir(join(raiz, 'dados'), { recursive: true });
-await writeFile(ARQUIVO, JSON.stringify(db, null, 2), 'utf8');
+
+await gravarDados(db);
 console.log('\n  pronto. abra:');
 console.log('  http://localhost:4180/?c=demo-vaquinha');
 console.log('  http://localhost:4180/?c=demo-rifa\n');
