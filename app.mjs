@@ -9,7 +9,7 @@ import { readFile } from 'node:fs/promises';
 import { join, extname, dirname, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { networkInterfaces } from 'node:os';
-import { randomUUID, timingSafeEqual, createHash } from 'node:crypto';
+import { randomUUID, timingSafeEqual, createHash, createHmac } from 'node:crypto';
 import { env, tokenCashIn, criarCobranca, consultarCobranca, novoTxid } from './bass.mjs';
 import { prepararDisco, lerDados, gravarDados, guardarArquivo, lerArquivo, descreverArmazem, tocarArmazem } from './armazem.mjs';
 import webpush from 'web-push';
@@ -39,11 +39,33 @@ async function ler() {
   return cache;
 }
 function gravar() {
-  // serializa as gravações para dois pedidos simultâneos não se atropelarem
-  gravando = gravando.then(() => gravarDados(cache))
+  // serializa as gravações para dois pedidos simultâneos não se atropelarem, e
+  // adota de volta o resultado da junção — assim esta instância já enxerga o que
+  // a outra escreveu enquanto isso
+  gravando = gravando
+    .then(() => gravarDados(cache))
+    .then(junto => { if (junto) cache = junto; })
     .catch(e => console.error('[dados] falha ao gravar:', e.message));
   return gravando;
 }
+
+// visita é o caminho mais movimentado e o menos importante: junta as gravações
+let gravacaoAgendada = null;
+function agendarGravacao() {
+  if (gravacaoAgendada) return gravacaoAgendada;
+  gravacaoAgendada = new Promise(resolve => {
+    setTimeout(() => { gravacaoAgendada = null; gravar().then(resolve); }, 5000);
+  });
+  return gravacaoAgendada;
+}
+
+// A chave do prêmio é derivada do txid, não sorteada e guardada: assim ela não
+// se perde se o arquivo de dados for sobrescrito, e continua impossível de
+// adivinhar sem conhecer o txid.
+const SEGREDO = env.SEGREDO_RESGATE || env.VAPID_PRIVADA || env.ADMIN_SENHA || 'growdy-sem-segredo';
+const chaveDeResgate = txid => createHmac('sha256', SEGREDO).update('resgate:' + txid).digest('hex').slice(0, 20);
+const chaveConfere = (contrib, chave) =>
+  !!chave && (chave === contrib.resgate || chave === chaveDeResgate(contrib.txid));
 
 /* ---------------- quem é dono da casa ---------------- */
 function ehAdmin(req) {
@@ -107,7 +129,7 @@ async function confirmarPagamento(contrib, e2e) {
   contrib.pagaEm = Date.now();
   if (e2e) contrib.e2e = e2e;
   // chave que abre o prêmio depois, sem precisar de conta nem senha
-  if (!contrib.resgate) contrib.resgate = randomUUID().replace(/-/g, '').slice(0, 20);
+  contrib.resgate = chaveDeResgate(contrib.txid);
   const campanha = db.campanhas[contrib.campanhaId];
   if (campanha && campanha.tipo === 'rifa' && contrib.cotas > 0 && !contrib.numeros?.length) {
     contrib.numeros = numerosLivres(db, campanha, contrib.cotas);
@@ -178,7 +200,7 @@ async function contarVisita(campanhaId, req) {
   let nova = false;
   if (!vistosHoje.has(impressao)) { vistosHoje.add(impressao); doDia.pessoas++; nova = true; }
   db.visitas[campanhaId][dia] = doDia;
-  gravar();
+  agendarGravacao();
   return { dia, ...doDia, nova };
 }
 
@@ -439,6 +461,7 @@ async function api(req, res, url) {
       } : (db.campanhas[id]?.recompensa || { ativa: false }),
       encerrada: !!(c.encerrada ?? db.campanhas[id]?.encerrada),
       criadaEm: db.campanhas[id]?.criadaEm || Date.now(),
+      atualizadaEm: Date.now(), // é por este carimbo que a junção sabe qual versão vale
     };
     semearDemo(db, db.campanhas[id]);
     await gravar();
@@ -461,6 +484,8 @@ async function api(req, res, url) {
     if (!db.campanhas[id]) return json(res, 404, { erro: 'Campanha não encontrada.' });
     const titulo = db.campanhas[id].titulo;
     delete db.campanhas[id];
+    // fica anotado como apagada para não voltar pela cópia de outra instância
+    db.apagadas = [...new Set([...(db.apagadas || []), id])];
     db.contribuicoes = db.contribuicoes.filter(c => c.campanhaId !== id);
     if (db.visitas) delete db.visitas[id];
     await gravar();
@@ -684,11 +709,21 @@ async function api(req, res, url) {
   }
 
   /* ---------------- prêmio de quem apoiou ---------------- */
+  // quem tem o txid já provou que é dono do pagamento: é com ele que a chave é
+  // recuperada quando o aparelho perde a que tinha
+  const mChave = p.match(/^\/api\/premio\/([A-Za-z0-9]+)\/chave$/);
+  if (mChave && req.method === 'GET') {
+    const contrib = db.contribuicoes.find(c => c.txid === mChave[1]);
+    if (!contrib || contrib.status !== 'PAGO') return json(res, 404, { erro: 'Apoio não encontrado.' });
+    if (!contrib.resgate) { contrib.resgate = chaveDeResgate(contrib.txid); gravar(); }
+    return json(res, 200, { chave: chaveDeResgate(contrib.txid) });
+  }
+
   const mPremio = p.match(/^\/api\/premio\/([A-Za-z0-9]+)$/);
   if (mPremio && req.method === 'GET') {
     const contrib = db.contribuicoes.find(c => c.txid === mPremio[1]);
     const chave = url.searchParams.get('k') || '';
-    if (!contrib || !contrib.resgate || contrib.resgate !== chave) return json(res, 404, { erro: 'Prêmio não encontrado.' });
+    if (!contrib || !chaveConfere(contrib, chave)) return json(res, 404, { erro: 'Prêmio não encontrado.' });
     const campanha = db.campanhas[contrib.campanhaId];
     return json(res, 200, estadoDoPremio(campanha, contrib));
   }
@@ -697,7 +732,7 @@ async function api(req, res, url) {
   if (mResgatar && req.method === 'POST') {
     const contrib = db.contribuicoes.find(c => c.txid === mResgatar[1]);
     const { k } = await corpoDe(req);
-    if (!contrib || !contrib.resgate || contrib.resgate !== k) return json(res, 404, { erro: 'Prêmio não encontrado.' });
+    if (!contrib || !chaveConfere(contrib, k)) return json(res, 404, { erro: 'Prêmio não encontrado.' });
     const campanha = db.campanhas[contrib.campanhaId];
     const estado = estadoDoPremio(campanha, contrib);
     if (!estado.liberado) return json(res, 403, estado);
@@ -808,7 +843,7 @@ const servidor = createServer(async (req, res) => {
       const campanha = contrib && db.campanhas[contrib.campanhaId];
       // quem organiza vê o próprio arquivo pela senha; o resto precisa do par
       // txid + chave de resgate, e na rifa ainda precisa ter ganhado
-      const liberado = ehAdmin(req) || (contrib && contrib.resgate && contrib.resgate === chave &&
+      const liberado = ehAdmin(req) || (contrib && chaveConfere(contrib, chave) &&
         campanha && estadoDoPremio(campanha, contrib).liberado &&
         campanha.recompensa.arquivo === url.pathname);
       if (!liberado) { res.writeHead(403, { 'Content-Type': 'text/plain; charset=utf-8' }).end('este prêmio não é seu'); return; }

@@ -99,11 +99,79 @@ export async function lerDados() {
   }
 }
 
-export async function gravarDados(dados) {
+// Durante um deploy o Render mantém a instância velha viva enquanto a nova sobe.
+// As duas têm sua própria cópia do dados.json na memória; se cada uma gravar o
+// arquivo inteiro, a última apaga o que a outra acabou de escrever — foi assim
+// que um pagamento confirmado perdeu a chave do prêmio. Então nunca gravamos por
+// cima: lemos o que está lá, juntamos, e só então gravamos.
+function juntar(remoto, local) {
+  const junto = { campanhas: {}, contribuicoes: [], visitas: {}, push: [], avisos: {} };
+
+  // campanhas: fica a versão mais recente de cada id
+  for (const fonte of [remoto, local]) {
+    for (const [id, c] of Object.entries(fonte.campanhas || {})) {
+      const atual = junto.campanhas[id];
+      if (!atual || (c.atualizadaEm || c.criadaEm || 0) >= (atual.atualizadaEm || atual.criadaEm || 0)) {
+        junto.campanhas[id] = c;
+      }
+    }
+  }
+  // uma campanha apagada de propósito não pode voltar pela cópia velha
+  const apagadas = new Set([...(local.apagadas || []), ...(remoto.apagadas || [])]);
+  junto.apagadas = [...apagadas];
+  for (const id of apagadas) delete junto.campanhas[id];
+
+  // contribuições: união por txid, e pago sempre vence aguardando
+  const porTxid = new Map();
+  for (const fonte of [remoto, local]) {
+    for (const c of fonte.contribuicoes || []) {
+      const atual = porTxid.get(c.txid);
+      if (!atual) { porTxid.set(c.txid, c); continue; }
+      const valeMais = (x) => (x.status === 'PAGO' ? 2 : x.status === 'AGUARDANDO' ? 1 : 0);
+      if (valeMais(c) > valeMais(atual) || (valeMais(c) === valeMais(atual) && (c.pagaEm || c.criadaEm || 0) >= (atual.pagaEm || atual.criadaEm || 0))) {
+        porTxid.set(c.txid, { ...atual, ...c });
+      }
+    }
+  }
+  junto.contribuicoes = [...porTxid.values()].filter(c => !apagadas.has(c.campanhaId));
+
+  // visitas: por campanha e por dia, fica o maior contador
+  for (const fonte of [remoto, local]) {
+    for (const [id, dias] of Object.entries(fonte.visitas || {})) {
+      if (apagadas.has(id)) continue;
+      junto.visitas[id] = junto.visitas[id] || {};
+      for (const [dia, n] of Object.entries(dias)) {
+        const atual = junto.visitas[id][dia] || { vistas: 0, pessoas: 0 };
+        junto.visitas[id][dia] = {
+          vistas: Math.max(atual.vistas || 0, n.vistas || 0),
+          pessoas: Math.max(atual.pessoas || 0, n.pessoas || 0),
+        };
+      }
+    }
+  }
+
+  // inscrições de push: união por endpoint
+  const porEndpoint = new Map();
+  for (const fonte of [remoto, local]) for (const i of fonte.push || []) porEndpoint.set(i.endpoint, i);
+  junto.push = [...porEndpoint.values()];
+
+  junto.avisos = { ...(remoto.avisos || {}), ...(local.avisos || {}) };
+  return junto;
+}
+
+async function gravarCru(dados) {
   const texto = JSON.stringify(dados, null, 2);
   if (naNuvem) return nuvemGravar('dados.json', Buffer.from(texto, 'utf8'), 'application/json');
   await mkdir(PASTA, { recursive: true });
   await writeFile(join(PASTA, 'dados.json'), texto, 'utf8');
+}
+
+export async function gravarDados(dados) {
+  let remoto = null;
+  try { remoto = await lerDados(); } catch (e) { remoto = null; }
+  const junto = remoto ? juntar(remoto, dados) : dados;
+  await gravarCru(junto);
+  return junto;
 }
 
 // pasta e 'fotos' (capa da campanha) ou 'midia' (premio em foto ou video)

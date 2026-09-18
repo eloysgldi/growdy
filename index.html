@@ -2633,8 +2633,19 @@ async function abrirPremio(txid, chave) {
   $("#premio-corpo").innerHTML = '<div class="premio-fechado"><span class="girador"></span>abrindo…</div>';
   $("#btn-premio-acao").hidden = true;
   abrirFolha($("#folha-premio"));
+  const pedirEstado = k => servidor("/api/premio/" + txid + "?k=" + encodeURIComponent(k));
   try {
-    const estado = await servidor("/api/premio/" + txid + "?k=" + encodeURIComponent(chave));
+    let estado;
+    try {
+      estado = await pedirEstado(chave);
+    } catch (e) {
+      // chave velha ou perdida: o txid é prova suficiente de que o apoio é seu
+      const nova = await servidor("/api/premio/" + txid + "/chave");
+      chave = nova.chave;
+      premioAberto.chave = chave;
+      if (campanhaId) guardarMeuApoio(campanhaId, txid, chave);
+      estado = await pedirEstado(chave);
+    }
     premioAberto.estado = estado;
     desenharPremio(estado);
   } catch (e) {
